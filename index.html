@@ -227,7 +227,11 @@
       font-size: 0.78rem;
       color: #9ca3af;
     }
+    /* MISE À JOUR POUR SUPPRESSION INDIVIDUELLE */
     .fixed-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 4px 0;
       border-bottom: 1px dashed #1f2937;
     }
@@ -246,6 +250,28 @@
     .fixed-item-success {
       color: #34d399;
     }
+    .fixed-item-content {
+        flex-grow: 1; 
+    }
+    .delete-fixed-btn { /* Style du bouton "X" */
+        background: #ef4444; 
+        color: white; 
+        border: none; 
+        border-radius: 50%; 
+        width: 18px; 
+        height: 18px; 
+        font-size: 10px; 
+        padding: 0; 
+        line-height: 1; 
+        margin-left: 10px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        flex-shrink: 0; /* Empêche le rétrécissement */
+    }
+    .delete-fixed-btn:hover {
+        background: #dc2626;
+    }
+    /* FIN MISE À JOUR */
     
     .score-bar-container {
       background: #1e293b;
@@ -274,13 +300,13 @@
 <body>
   <div class="app">
     <header>
-      <h1>Planificateur IA – Affectation globale (v3.1)</h1>
+      <h1>Planificateur IA – Affectation globale (v3.2)</h1>
       <p>
         Répartition globale des employés sur l’ensemble des projets, en respectant :
         <strong>Compétences > Évaluation > Distance</strong>.
       </p>
       <div class="tagline">
-        Mode Haut Volume : 150 employés générés / 25 projets. La planification est plus longue.
+        Mode Haut Volume : 150 employés générés / 25 projets.
       </div>
     </header>
 
@@ -471,6 +497,18 @@
     }
 
     let fixedAssignments = [];
+
+    // NOUVELLE FONCTION POUR SUPPRIMER UNE DIRECTIVE
+    function removeFixedAssignment(index) {
+      if (index >= 0 && index < fixedAssignments.length) {
+        fixedAssignments.splice(index, 1);
+        renderFixedList();
+        // Avertir l'utilisateur de relancer la planif après suppression
+        summaryText.textContent = "Directive supprimée. Cliquez sur 'Générer une nouvelle planification (IA)' pour mettre à jour les affectations.";
+      }
+    }
+    // FIN NOUVELLE FONCTION
+
 
     function scoreEmployeeForProject(emp, project, employeeLoad) {
       if (emp.metier !== project.metier) return null;
@@ -675,7 +713,9 @@
         return;
       }
       fixedList.innerHTML = "";
-      fixedAssignments.forEach(d => {
+      
+      // Utilisation de l'index pour la suppression
+      fixedAssignments.forEach((d, index) => { 
         const proj = projects.find(pr => pr.id === d.projectId);
         const emp = employees.find(e => e.id === d.empId);
         if (!proj || !emp) return;
@@ -703,12 +743,24 @@
         }
 
         div.innerHTML = `
-          • <span>${emp.nom}</span> doit être affecté à <span>${proj.id}</span>
-          <div class="${statusClass}">
-            ${statusText}
+          <div class="fixed-item-content">
+            • <span>${emp.nom}</span> doit être affecté à <span>${proj.id}</span>
+            <div class="${statusClass}">
+              ${statusText}
+            </div>
           </div>
+          <button class="delete-fixed-btn" data-index="${index}">X</button>
         `;
         fixedList.appendChild(div);
+      });
+      
+      // AJOUT DES ÉVÉNEMENTS POUR LA SUPPRESSION INDIVIDUELLE
+      fixedList.querySelectorAll('.delete-fixed-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          // Utilise data-index pour identifier la directive à supprimer
+          const index = e.target.getAttribute('data-index'); 
+          removeFixedAssignment(parseInt(index));
+        });
       });
     }
 
