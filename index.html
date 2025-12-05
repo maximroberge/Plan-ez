@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Planif IA – Affectation globale</title>
+  <title>Planif IA – Affectation globale (v2)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,15 +83,23 @@
       color: white;
       font-weight: 500;
       margin-top: 6px;
+      transition: all 0.2s;
     }
     button:hover {
       opacity: 0.95;
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(56, 189, 248, 0.3);
     }
     .btn-secondary {
       background: #111827;
       border: 1px solid #374151;
       margin-left: 6px;
+      color: #e5e7eb;
+    }
+    .btn-secondary:hover {
+      box-shadow: none;
+      border-color: #4b5563;
+      transform: translateY(0);
     }
     .badge {
       font-size: 0.75rem;
@@ -167,40 +175,51 @@
       gap: 8px;
     }
     .assignment-card {
-      background: #020617;
+      background: #0f172a; /* Changement pour la carte d'affectation */
       border-radius: 12px;
-      padding: 8px 10px;
-      border: 1px solid #1f2937;
+      padding: 10px;
+      border: 1px solid #1e293b;
       font-size: 0.8rem;
+    }
+    .fixed-assignment {
+      border: 1px solid #fde047;
+      background: #422006;
     }
     .assignment-top {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      align-items: center;
     }
     .assignment-top span.name {
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
     .pill-row {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
       color: #9ca3af;
     }
     .pill-row span {
       padding: 2px 6px;
       border-radius: 999px;
       border: 1px solid #374151;
+      font-size: 0.75rem;
     }
     .assignment-detail {
-      color: #6b7280;
+      color: #94a3b8;
+      line-height: 1.4;
     }
     .no-assign {
       font-size: 0.8rem;
       color: #f97373;
       margin-bottom: 4px;
+      padding: 8px 10px;
+      border: 1px dashed #f97373;
+      border-radius: 8px;
     }
     .fixed-list {
       margin-top: 8px;
@@ -208,11 +227,45 @@
       color: #9ca3af;
     }
     .fixed-item {
-      padding: 2px 0;
+      padding: 4px 0;
+      border-bottom: 1px dashed #1f2937;
+    }
+    .fixed-item:last-child {
+      border-bottom: none;
     }
     .fixed-item span {
       color: #e5e7eb;
+      font-weight: 500;
     }
+    .fixed-item-error {
+      color: #f97373;
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+    .fixed-item-success {
+      color: #34d399;
+    }
+    
+    /* Style pour la barre de score */
+    .score-bar-container {
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+      height: 8px;
+    }
+    .score-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #16a34a);
+      width: 0%;
+      transition: width 0.3s ease-out;
+    }
+    .score-label {
+      font-size: 0.7rem;
+      color: #e5e7eb;
+      font-weight: 700;
+    }
+    
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
     }
@@ -221,41 +274,37 @@
 <body>
   <div class="app">
     <header>
-      <h1>Planificateur IA – Affectation globale</h1>
+      <h1>Planificateur IA – Affectation globale (v2)</h1>
       <p>
         Répartition globale des employés sur l’ensemble des projets, en respectant :
-        <strong>Compétences &gt; Évaluation &gt; Distance</strong>,
-        sans double affectation sur des projets qui se chevauchent.
+        <strong>Compétences > Évaluation > Distance</strong>.
       </p>
       <div class="tagline">
-        35 employés · 7 projets · Directives fixes (ex: « Jean sur P-101 ») + rebrassage.
+        Nouvelles fonctionnalités : Transparence des conflits de directives fixes et amélioration de l'affichage du score.
       </div>
     </header>
 
     <div class="grid">
-      <!-- Colonne gauche : Projets + directives + boutons -->
       <section class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
           <div>
-            <h2>1. Projets à planifier</h2>
-            <small>Dates, métiers, compétences – base de test.</small>
+            <h2>1. Directives et Contrôles</h2>
+            <small>Base de données : 35 employés / 7 projets.</small>
           </div>
           <div class="badge">Mode global</div>
         </div>
 
-        <!-- Boutons planification / rebrassage -->
         <div style="margin-top:10px; margin-bottom:4px;">
           <button id="planAllBtn">Planifier tous les projets (IA)</button>
           <button id="shuffleBtn" class="btn-secondary">Rebrasser la planif</button>
         </div>
         <small style="display:block;margin-top:2px;color:#6b7280;font-size:0.75rem;">
-          La planification tient compte des directives ci-dessous si tu en ajoutes.
+          Le rebrassage permet de tester des options différentes pour les scores proches.
         </small>
 
-        <!-- Directives fixes -->
         <div style="margin-top:16px; border-top:1px solid #1f2937; padding-top:12px;">
-          <h3 style="font-size:0.95rem;margin-bottom:4px;">Directive fixe</h3>
-          <small>Attribuer manuellement un employé à un projet (l’IA doit le respecter).</small>
+          <h3 style="font-size:0.95rem;margin-bottom:4px;">Directive fixe (Manuelle)</h3>
+          <small>Attribuer un employé à un projet. L’IA doit impérativement respecter cette contrainte (si possible).</small>
 
           <label style="margin-top:8px;">Projet</label>
           <select id="fixedProjectSelect"></select>
@@ -271,11 +320,12 @@
           </div>
         </div>
 
-        <!-- Liste des projets -->
-        <div class="projects-list" id="projectsList" style="margin-top:16px;"></div>
+        <div style="margin-top:24px; border-top:1px solid #1f2937; padding-top:12px;">
+            <h3 style="font-size:0.95rem;">Liste des projets</h3>
+        </div>
+        <div class="projects-list" id="projectsList"></div>
       </section>
 
-      <!-- Colonne droite : Résultats -->
       <section class="card">
         <div class="result-header">
           <div>
@@ -488,7 +538,8 @@
       const e1 = parseDate(p1.fin);
       const s2 = parseDate(p2.debut);
       const e2 = parseDate(p2.fin);
-      if (e1 <= s2 || e2 <= s1) return false;
+      // Le chevauchement se produit si (Début1 <= Fin2) ET (Début2 <= Fin1)
+      if (e1 < s2 || e2 < s1) return false;
       return true;
     }
 
@@ -506,8 +557,9 @@
 
     // =========================
     // Directives fixes
+    // On ajoute un champ 'status' pour la transparence des conflits
     // =========================
-    let fixedAssignments = []; // { projectId, empId }
+    let fixedAssignments = []; // { projectId, empId, status: 'pending'|'assigned'|'conflict_overlap'|'conflict_dispo'|'conflict_metier' }
 
     // =========================
     // Scoring : Compétence > Évaluation > Distance
@@ -520,11 +572,16 @@
       const empSkills = emp.competences.map(c => c.toLowerCase());
 
       const matched = required.filter(r => empSkills.includes(r)).length;
-      const competenceScore = matched / required.length;
-      if (competenceScore === 0) return null;
+      
+      // La compétence est un pré-requis : si match = 0, l'employé n'est pas candidat.
+      if (matched === 0) return null; 
 
-      const evalScore = Math.min(Math.max(emp.evaluation, 0), 5) / 5;
-      const distanceScore = Math.max(0, 1 - (emp.distanceKm / 50));
+      const competenceScore = matched / required.length; // Max 1.0
+      
+      const evalScore = Math.min(Math.max(emp.evaluation, 0), 5) / 5; // Max 1.0
+      
+      const maxDistance = 50; // On normalise la distance par rapport à 50 km
+      const distanceScore = Math.max(0, 1 - (emp.distanceKm / maxDistance)); // Max 1.0 (pour 0 km)
 
       // Pondération fixe : 50 / 30 / 20
       let baseScore =
@@ -532,8 +589,9 @@
         0.3 * evalScore +
         0.2 * distanceScore;
 
+      // Facteur de charge (Load)
       const load = employeeLoad[emp.id] || 0;
-      const loadFactor = 1 / (1 + load * 0.5);
+      const loadFactor = 1 / (1 + load * 0.5); // Réduit le score si la charge augmente.
 
       const finalScore = baseScore * loadFactor;
 
@@ -555,61 +613,95 @@
         (a, b) => parseDate(a.debut) - parseDate(b.debut)
       );
 
-      const assignments = {};
-      const employeeAssignments = {};
-      const employeeLoad = {};
+      const assignments = {}; // { projectId: [{ emp, s }] }
+      const employeeAssignments = {}; // { empId: [projectId, ...] }
+      const employeeLoad = {}; // { empId: count }
 
+      // Initialiser la structure de résultats
       for (const p of sortedProjects) {
         assignments[p.id] = [];
       }
 
-      // 1) Appliquer d'abord les directives fixes
-      for (const directive of fixedAssignments) {
+      // 1) Réinitialiser les statuts des directives
+      fixedAssignments = fixedAssignments.map(d => ({ ...d, status: 'pending', reason: null }));
+      
+      const assignedFixed = new Set(); // Pour éviter de tenter d'assigner la même directive deux fois
+
+      // 2) Appliquer d'abord les directives fixes
+      for (let i = 0; i < fixedAssignments.length; i++) {
+        const directive = fixedAssignments[i];
         const proj = projects.find(pr => pr.id === directive.projectId);
         const emp = employees.find(e => e.id === directive.empId);
-        if (!proj || !emp) continue;
 
-        if (emp.metier !== proj.metier) continue;
-        if (!emp.disponibilite.toLowerCase().includes("disponible")) continue;
-        if (assignments[proj.id].length >= proj.slots) continue;
+        if (!proj || !emp) continue; // Si les IDs sont invalides (ne devrait pas arriver avec les selects)
 
-        const alreadyForEmp = employeeAssignments[emp.id] || [];
-        let conflit = false;
-        for (const pid of alreadyForEmp) {
-          const ap = projects.find(pr => pr.id === pid);
-          if (ap && projectsOverlap(ap, proj)) {
-            conflit = true;
-            break;
-          }
+        let status = 'assigned';
+        let reason = null;
+
+        // Vérifications
+        if (emp.metier !== proj.metier) {
+            status = 'conflict_metier';
+            reason = `Métier non compatible (${emp.metier} vs ${proj.metier})`;
+        } else if (!emp.disponibilite.toLowerCase().includes("disponible")) {
+            status = 'conflict_dispo';
+            reason = `Employé non disponible (${emp.disponibilite})`;
+        } else if (assignments[proj.id].length >= proj.slots) {
+            status = 'conflict_slots';
+            reason = `Projet déjà complet (${proj.slots} slots remplis)`;
+        } else {
+            // Vérification de chevauchement avec les affectations existantes de cet employé
+            const alreadyForEmp = employeeAssignments[emp.id] || [];
+            let conflit = false;
+            let conflitProjId = null;
+            for (const pid of alreadyForEmp) {
+                const ap = projects.find(pr => pr.id === pid);
+                if (ap && projectsOverlap(ap, proj)) {
+                    conflit = true;
+                    conflitProjId = ap.id;
+                    break;
+                }
+            }
+
+            if (conflit) {
+                status = 'conflict_overlap';
+                reason = `Chevauchement avec ${conflitProjId}`;
+            }
         }
-        if (conflit) continue;
 
-        assignments[proj.id].push({ emp, s: {
-          finalScore: 1,
-          competenceScore: 1,
-          evalScore: emp.evaluation / 5,
-          distanceScore: Math.max(0, 1 - (emp.distanceKm / 50)),
-          matched: proj.competencesRequises.length,
-          loadFactor: 1
-        }});
+        fixedAssignments[i].status = status;
+        fixedAssignments[i].reason = reason;
 
-        if (!employeeAssignments[emp.id]) employeeAssignments[emp.id] = [];
-        employeeAssignments[emp.id].push(proj.id);
-        employeeLoad[emp.id] = (employeeLoad[emp.id] || 0) + 1;
+        if (status === 'assigned') {
+            // L'affectation est réussie
+            const score = scoreEmployeeForProject(emp, proj, employeeLoad) || { // Score pour l'affichage
+                finalScore: 1.0, competenceScore: 1.0, evalScore: emp.evaluation / 5, 
+                distanceScore: Math.max(0, 1 - (emp.distanceKm / 50)), matched: proj.competencesRequises.length, loadFactor: 1 
+            };
+            
+            assignments[proj.id].push({ emp, s: score, isFixed: true });
+
+            if (!employeeAssignments[emp.id]) employeeAssignments[emp.id] = [];
+            employeeAssignments[emp.id].push(proj.id);
+            employeeLoad[emp.id] = (employeeLoad[emp.id] || 0) + 1;
+            assignedFixed.add(directive);
+        }
       }
 
-      // 2) Compléter les slots restants avec IA + shuffle
+      // 3) Compléter les slots restants avec IA + shuffle
       for (const project of sortedProjects) {
+        // Mélanger la liste des employés à chaque projet pour introduire de l'aléatoire
         const shuffledEmployees = shuffleArray(employees);
 
         for (let slot = assignments[project.id].length; slot < project.slots; slot++) {
           const candidates = [];
 
           for (const emp of shuffledEmployees) {
+            // Un employé ne peut pas être réassigné au même projet (y compris s'il l'a été par directive)
             const alreadyAssignedHere = (assignments[project.id] || [])
               .some(a => a.emp.id === emp.id);
             if (alreadyAssignedHere) continue;
 
+            // Vérification de chevauchement avec les affectations existantes
             const assignedProjects = employeeAssignments[emp.id] || [];
             let conflit = false;
             for (const pid of assignedProjects) {
@@ -623,7 +715,7 @@
 
             const s = scoreEmployeeForProject(emp, project, employeeLoad);
             if (s) {
-              candidates.push({ emp, s });
+              candidates.push({ emp, s, isFixed: false });
             }
           }
 
@@ -631,6 +723,7 @@
             continue;
           }
 
+          // Le meilleur candidat est celui avec le score le plus élevé
           candidates.sort((a, b) => b.s.finalScore - a.s.finalScore);
           const chosen = candidates[0];
 
@@ -682,6 +775,7 @@
       }
     }
 
+    // Mise à jour de l'affichage des directives avec le statut et la raison
     function renderFixedList() {
       if (!fixedAssignments.length) {
         fixedList.textContent = "Aucune directive pour l’instant.";
@@ -689,12 +783,38 @@
       }
       fixedList.innerHTML = "";
       fixedAssignments.forEach(d => {
-        const proj = projects.find(p => p.id === d.projectId);
+        const proj = projects.find(pr => pr.id === d.projectId);
         const emp = employees.find(e => e.id === d.empId);
         if (!proj || !emp) return;
+        
         const div = document.createElement("div");
         div.className = "fixed-item";
-        div.innerHTML = `• <span>${emp.nom}</span> doit être affecté à <span>${proj.id} – ${proj.nom}</span>`;
+        
+        let statusText = '';
+        let statusClass = 'fixed-item-success';
+        
+        switch(d.status) {
+            case 'assigned':
+                statusText = '– Affectation RESPECTÉE.';
+                break;
+            case 'conflict_overlap':
+            case 'conflict_dispo':
+            case 'conflict_metier':
+            case 'conflict_slots':
+                statusText = `– CONFLIT : ${d.reason}`;
+                statusClass = 'fixed-item-error';
+                break;
+            default:
+                statusText = '– En attente de planification.';
+                statusClass = 'fixed-item';
+        }
+
+        div.innerHTML = `
+          • <span>${emp.nom}</span> doit être affecté à <span>${proj.id}</span>
+          <div class="${statusClass}">
+            ${statusText}
+          </div>
+        `;
         fixedList.appendChild(div);
       });
     }
@@ -742,16 +862,22 @@
           no.textContent = "Aucun employé disponible/compatible pour ce projet.";
           list.appendChild(no);
         } else {
-          for (const { emp, s } of assigned) {
+          for (const { emp, s, isFixed } of assigned) {
             const card = document.createElement("div");
-            card.className = "assignment-card";
+            card.className = "assignment-card" + (isFixed ? ' fixed-assignment' : '');
+
+            const finalScorePercentage = (s.finalScore * 100).toFixed(1);
 
             const top = document.createElement("div");
             top.className = "assignment-top";
             top.innerHTML = `
-              <span class="name">${emp.nom}</span>
-              <span>Score : ${(s.finalScore * 100).toFixed(1)}/100</span>
+              <span class="name">${emp.nom} ${isFixed ? '⭐ (Direct.)' : ''}</span>
+              <div class="score-label">Score : ${finalScorePercentage}%</div>
             `;
+            
+            const scoreBar = document.createElement('div');
+            scoreBar.className = 'score-bar-container';
+            scoreBar.innerHTML = `<div class="score-bar" style="width: ${finalScorePercentage}%;"></div>`;
 
             const pills = document.createElement("div");
             pills.className = "pill-row";
@@ -759,22 +885,26 @@
               <span>${emp.metier}</span>
               <span>Éval : ${emp.evaluation.toFixed(1)}/5</span>
               <span>Dist : ${emp.distanceKm} km</span>
-              <span>Affectations totales : ${employeeLoad[emp.id] || 1}</span>
+              <span>Affect. tot. : ${employeeLoad[emp.id] || 1}</span>
+              <span>Dispo : ${emp.disponibilite}</span>
             `;
 
             const detail = document.createElement("div");
             detail.className = "assignment-detail";
             detail.innerHTML = `
               Compétences : ${emp.competences.join(", ")}<br/>
-              Match compétences : ${(s.matched || 0)}/${p.competencesRequises.length}<br/>
-              <strong>Détail du score</strong><br/>
-              - Compétences : ${(s.competenceScore * 100).toFixed(0)}% (poids 50%)<br/>
-              - Évaluation : ${(s.evalScore * 100).toFixed(0)}% (poids 30%)<br/>
-              - Distance : ${(s.distanceScore * 100).toFixed(0)}% (poids 20%)<br/>
-              - Facteur de charge : ${(s.loadFactor * 100).toFixed(0)}%
+              Match requis : <strong>${(s.matched || 0)}/${p.competencesRequises.length}</strong> (Compétences requises : ${p.competencesRequises.join(", ")})<br/>
+              Détail du score pondéré :
+              <ul>
+                <li>Compétences (50%) : ${(s.competenceScore * 50).toFixed(1)} / 50</li>
+                <li>Évaluation (30%) : ${(s.evalScore * 30).toFixed(1)} / 30</li>
+                <li>Distance (20%) : ${(s.distanceScore * 20).toFixed(1)} / 20</li>
+                <li>Facteur de charge : ${(s.loadFactor * 100).toFixed(0)}%</li>
+              </ul>
             `;
 
             card.appendChild(top);
+            card.appendChild(scoreBar); // Nouvelle barre de score
             card.appendChild(pills);
             card.appendChild(detail);
             list.appendChild(card);
@@ -784,6 +914,9 @@
         block.appendChild(list);
         assignmentsContainer.appendChild(block);
       }
+      
+      // Mettre à jour la liste des directives après la planif
+      renderFixedList();
     }
 
     // Remplir les selects pour directives fixes
@@ -795,10 +928,10 @@
         fixedProjectSelect.appendChild(opt);
       });
 
-      employees.forEach(e => {
+      employees.sort((a, b) => a.nom.localeCompare(b.nom)).forEach(e => {
         const opt = document.createElement("option");
         opt.value = e.id;
-        opt.textContent = `${e.id} – ${e.nom} (${e.metier})`;
+        opt.textContent = `${e.nom} (${e.metier} - ${e.id})`;
         fixedEmployeeSelect.appendChild(opt);
       });
     }
@@ -825,7 +958,7 @@
         d => d.projectId === projectId && d.empId === empId
       );
       if (!exists) {
-        fixedAssignments.push({ projectId, empId });
+        fixedAssignments.push({ projectId, empId, status: 'pending', reason: null });
         renderFixedList();
       }
     });
@@ -837,7 +970,6 @@
     });
 
     // Init
-    const projectsListEl2 = projectsListEl; // juste pour être sûr qu'il existe déjà
     renderProjectsList();
     initFixedSelectors();
     renderFixedList();
