@@ -228,7 +228,7 @@
         sans double affectation sur des projets qui se chevauchent.
       </p>
       <div class="tagline">
-        35 employés · 7 projets · Ajout de directives fixes (ex: « Jean sur P-101 »).
+        35 employés · 7 projets · Directives fixes (ex: « Jean sur P-101 ») + rebrassage.
       </div>
     </header>
 
@@ -493,10 +493,21 @@
     }
 
     // =========================
+    // Shuffle util (pour "rebrasser")
+    // =========================
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // =========================
     // Directives fixes
     // =========================
-    // Tableau d'objets : { projectId, empId }
-    let fixedAssignments = [];
+    let fixedAssignments = []; // { projectId, empId }
 
     // =========================
     // Scoring : Compétence > Évaluation > Distance
@@ -521,7 +532,6 @@
         0.3 * evalScore +
         0.2 * distanceScore;
 
-      // Légère pénalité si déjà chargé
       const load = employeeLoad[emp.id] || 0;
       const loadFactor = 1 / (1 + load * 0.5);
 
@@ -538,7 +548,7 @@
     }
 
     // =========================
-    // Planification globale avec directives fixes
+    // Planification globale avec directives + shuffle
     // =========================
     function planAllProjectsGlobally() {
       const sortedProjects = [...projects].sort(
@@ -553,22 +563,16 @@
         assignments[p.id] = [];
       }
 
-      // 1) Appliquer les directives fixes en premier
+      // 1) Appliquer d'abord les directives fixes
       for (const directive of fixedAssignments) {
         const proj = projects.find(pr => pr.id === directive.projectId);
         const emp = employees.find(e => e.id === directive.empId);
         if (!proj || !emp) continue;
 
-        // Vérifier métier
         if (emp.metier !== proj.metier) continue;
-
-        // Vérifier disponibilité 
         if (!emp.disponibilite.toLowerCase().includes("disponible")) continue;
-
-        // Vérifier qu'on ne dépasse pas le nombre de slots
         if (assignments[proj.id].length >= proj.slots) continue;
 
-        // Vérifier pas de conflit de dates pour cet employé
         const alreadyForEmp = employeeAssignments[emp.id] || [];
         let conflit = false;
         for (const pid of alreadyForEmp) {
@@ -580,7 +584,6 @@
         }
         if (conflit) continue;
 
-        // Si tout est correct, on l'assigne
         assignments[proj.id].push({ emp, s: {
           finalScore: 1,
           competenceScore: 1,
@@ -595,18 +598,18 @@
         employeeLoad[emp.id] = (employeeLoad[emp.id] || 0) + 1;
       }
 
-      // 2) Compléter les slots restants avec l'IA
+      // 2) Compléter les slots restants avec IA + shuffle
       for (const project of sortedProjects) {
+        const shuffledEmployees = shuffleArray(employees);
+
         for (let slot = assignments[project.id].length; slot < project.slots; slot++) {
           const candidates = [];
 
-          for (const emp of employees) {
-            // Déjà assigné à ce projet ?
+          for (const emp of shuffledEmployees) {
             const alreadyAssignedHere = (assignments[project.id] || [])
               .some(a => a.emp.id === emp.id);
             if (alreadyAssignedHere) continue;
 
-            // Chevauchement de dates avec d'autres projets où il est déjà
             const assignedProjects = employeeAssignments[emp.id] || [];
             let conflit = false;
             for (const pid of assignedProjects) {
@@ -763,7 +766,7 @@
             detail.className = "assignment-detail";
             detail.innerHTML = `
               Compétences : ${emp.competences.join(", ")}<br/>
-              Match compétences : ${s.matched || 0}/${p.competencesRequises.length}<br/>
+              Match compétences : ${(s.matched || 0)}/${p.competencesRequises.length}<br/>
               <strong>Détail du score</strong><br/>
               - Compétences : ${(s.competenceScore * 100).toFixed(0)}% (poids 50%)<br/>
               - Évaluation : ${(s.evalScore * 100).toFixed(0)}% (poids 30%)<br/>
@@ -785,7 +788,6 @@
 
     // Remplir les selects pour directives fixes
     function initFixedSelectors() {
-      // Projets
       projects.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p.id;
@@ -793,7 +795,6 @@
         fixedProjectSelect.appendChild(opt);
       });
 
-      // Employés
       employees.forEach(e => {
         const opt = document.createElement("option");
         opt.value = e.id;
@@ -808,7 +809,7 @@
       renderAssignments(result);
     });
 
-    // Bouton "Rebrasser" = relancer la même planif (après avoir changé directives, dispo, etc.)
+    // Bouton "Rebrasser" = relancer la planif (avec nouvel ordre aléatoire)
     shuffleBtn.addEventListener("click", () => {
       const result = planAllProjectsGlobally();
       renderAssignments(result);
@@ -820,7 +821,6 @@
       const empId = fixedEmployeeSelect.value;
       if (!projectId || !empId) return;
 
-      // éviter doublons exacts
       const exists = fixedAssignments.some(
         d => d.projectId === projectId && d.empId === empId
       );
@@ -837,6 +837,7 @@
     });
 
     // Init
+    const projectsListEl2 = projectsListEl; // juste pour être sûr qu'il existe déjà
     renderProjectsList();
     initFixedSelectors();
     renderFixedList();
