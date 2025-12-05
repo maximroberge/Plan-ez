@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Planif IA – Global (Projets & Employés)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 24px;
+    }
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+    header p {
+      font-size: 0.95rem;
+      color: #9ca3af;
+    }
+    .tagline {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+    }
+    .card small {
+      color: #6b7280;
+      font-size: 0.75rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: white;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    button:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      color: #9ca3af;
+    }
+    .projects-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+    .project-line {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: #020617;
+    }
+    .project-line strong {
+      display: block;
+      font-size: 0.9rem;
+    }
+    .project-meta {
+      margin-top: 2px;
+      color: #9ca3af;
+    }
+    .project-meta span {
+      margin-right: 8px;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .result-header small {
+      display: block;
+      color: #9ca3af;
+      font-size: 0.8rem;
+    }
+    .project-block {
+      border-top: 1px solid #1f2937;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .project-block:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .project-block-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+      gap: 8px;
+    }
+    .project-block-title h3 {
+      font-size: 0.95rem;
+    }
+    .project-block-title span {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    .assignment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .assignment-card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid #1f2937;
+      font-size: 0.8rem;
+    }
+    .assignment-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .assignment-top span.name {
+      font-weight: 500;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 2px;
+      color: #9ca3af;
+    }
+    .pill-row span {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+    }
+    .assignment-detail {
+      color: #6b7280;
+    }
+    .no-assign {
+      font-size: 0.8rem;
+      color: #f97373;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Planificateur IA – Affectation globale</h1>
+      <p>
+        Ce prototype propose une <strong>répartition globale</strong> des employés sur l’ensemble
+        des projets, en respectant les dates, les métiers et les contraintes :
+        <strong>Compétences &gt; Évaluation &gt; Distance</strong>, avec une répartition
+        relativement équilibrée de la charge.
+      </p>
+      <div class="tagline">
+        35 employés · 7 projets · Pas de double affectation sur des projets qui se chevauchent.
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Colonne gauche : Projets + bouton -->
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <div>
+            <h2>1. Projets à planifier</h2>
+            <small>Les dates, métiers et compétences sont fictifs, mais réalistes.</small>
+          </div>
+          <div class="badge">Mode global</div>
+        </div>
+
+        <button id="planAllBtn">Planifier tous les projets (IA)</button>
+
+        <div class="projects-list" id="projectsList"></div>
+      </section>
+
+      <!-- Colonne droite : Résultats -->
+      <section class="card">
+        <div class="result-header">
+          <div>
+            <h2>2. Résultat de la planification</h2>
+            <small id="summaryText">Clique sur “Planifier tous les projets (IA)” pour commencer.</small>
+          </div>
+        </div>
+        <div id="assignmentsContainer"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 35 EMPLOYÉS
+    // 11 mécaniciens · 11 soudeurs · 6 tuyauteurs · 7 manœuvres
+    // =========================
+    const employees = [
+      // MÉCANICIENS (11)
+      { id:"M-001", nom:"François Bouchard", metier:"mecanicien",
+        competences:["Alignement","Hydraulique","Maintenance préventive","Réducteur"],
+        disponibilite:"Disponible", distanceKm:12, evaluation:4.5 },
+      { id:"M-002", nom:"Éric Leblanc", metier:"mecanicien",
+        competences:["Pneumatique","Hydraulique","Maintenance corrective"],
+        disponibilite:"Disponible", distanceKm:35, evaluation:4.0 },
+      { id:"M-003", nom:"Tommy Beaulieu", metier:"mecanicien",
+        competences:["Alignement","Usinage","Maintenance préventive"],
+        disponibilite:"Sur chantier", distanceKm:20, evaluation:3.8 },
+      { id:"M-004", nom:"Gabriel Renaud", metier:"mecanicien",
+        competences:["Hydraulique","Réducteur","Analyse vibration"],
+        disponibilite:"Disponible", distanceKm:18, evaluation:4.7 },
+      { id:"M-005", nom:"Steve Caron", metier:"mecanicien",
+        competences:["Maintenance préventive","Montage de convoyeur"],
+        disponibilite:"Disponible", distanceKm:8, evaluation:4.2 },
+      { id:"M-006", nom:"Nicolas Girard", metier:"mecanicien",
+        competences:["Pneumatique","Alignement"],
+        disponibilite:"En congé", distanceKm:40, evaluation:3.9 },
+      { id:"M-007", nom:"Philippe Boivin", metier:"mecanicien",
+        competences:["Hydraulique","Maintenance préventive","Montage de convoyeur"],
+        disponibilite:"Disponible", distanceKm:25, evaluation:4.3 },
+      { id:"M-008", nom:"Luc Desjardins", metier:"mecanicien",
+        competences:["Usinage","Maintenance corrective"],
+        disponibilite:"Disponible", distanceKm:30, evaluation:3.7 },
+      { id:"M-009", nom:"André Marcoux", metier:"mecanicien",
+        competences:["Alignement","Montage de convoyeur"],
+        disponibilite:"Disponible", distanceKm:16, evaluation:4.1 },
+      { id:"M-010", nom:"Patrick Drouin", metier:"mecanicien",
+        competences:["Réducteur","Maintenance préventive"],
+        disponibilite:"Disponible", distanceKm:27, evaluation:4.0 },
+      { id:"M-011", nom:"Yanick Laramée", metier:"mecanicien",
+        competences:["Hydraulique","Analyses vibration"],
+        disponibilite:"Disponible", distanceKm:22, evaluation:3.9 },
+
+      // SOUDEURS (11)
+      { id:"S-001", nom:"Jean Tremblay", metier:"soudeur",
+        competences:["MIG","TIG","Espaces clos","ASP"],
+        disponibilite:"Disponible", distanceKm:10, evaluation:4.8 },
+      { id:"S-002", nom:"Marc Gagnon", metier:"soudeur",
+        competences:["MIG","Lecture plan","Pont roulant"],
+        disponibilite:"Sur chantier", distanceKm:22, evaluation:4.1 },
+      { id:"S-003", nom:"Sophie Lavoie", metier:"soudeur",
+        competences:["TIG inox","Soudure inox","Lecture plan"],
+        disponibilite:"Disponible", distanceKm:15, evaluation:4.9 },
+      { id:"S-004", nom:"Patrick Ouellet", metier:"soudeur",
+        competences:["MIG","ARC","Espaces clos"],
+        disponibilite:"Disponible", distanceKm:32, evaluation:4.0 },
+      { id:"S-005", nom:"David Roy", metier:"soudeur",
+        competences:["TIG","TIG inox","Soudure inox"],
+        disponibilite:"Disponible", distanceKm:5, evaluation:4.6 },
+      { id:"S-006", nom:"Alexandre Morin", metier:"soudeur",
+        competences:["MIG","Pont roulant"],
+        disponibilite:"Disponible", distanceKm:40, evaluation:3.8 },
+      { id:"S-007", nom:"Julie Fortin", metier:"soudeur",
+        competences:["TIG","Espaces clos","ASP"],
+        disponibilite:"En congé", distanceKm:18, evaluation:4.2 },
+      { id:"S-008", nom:"Martin Côté", metier:"soudeur",
+        competences:["MIG","Lecture plan","Soudure inox"],
+        disponibilite:"Disponible", distanceKm:28, evaluation:4.3 },
+      { id:"S-009", nom:"Samuel Lapierre", metier:"soudeur",
+        competences:["MIG","TIG","Pont roulant"],
+        disponibilite:"Disponible", distanceKm:14, evaluation:4.4 },
+      { id:"S-010", nom:"Jonathan Gosselin", metier:"soudeur",
+        competences:["ARC","Espaces clos"],
+        disponibilite:"Disponible", distanceKm:19, evaluation:3.9 },
+      { id:"S-011", nom:"Anthony Morissette", metier:"soudeur",
+        competences:["TIG inox","Lecture plan"],
+        disponibilite:"Disponible", distanceKm:12, evaluation:4.1 },
+
+      // TUYAUTEURS (6)
+      { id:"T-001", nom:"Maxime Poulin", metier:"tuyauteur",
+        competences:["Lecture isométriques","TIG inox","ASME B31.3"],
+        disponibilite:"Disponible", distanceKm:14, evaluation:4.5 },
+      { id:"T-002", nom:"Olivier Hamel", metier:"tuyauteur",
+        competences:["Filetage","Assemblage tuyauterie haute pression"],
+        disponibilite:"Disponible", distanceKm:33, evaluation:4.0 },
+      { id:"T-003", nom:"Carl Bernier", metier:"tuyauteur",
+        competences:["Lecture isométriques","Assemblage tuyauterie haute pression"],
+        disponibilite:"Sur chantier", distanceKm:20, evaluation:3.9 },
+      { id:"T-004", nom:"Pascal Gervais", metier:"tuyauteur",
+        competences:["TIG inox","ASME B31.3"],
+        disponibilite:"Disponible", distanceKm:27, evaluation:4.4 },
+      { id:"T-005", nom:"Denis Rivard", metier:"tuyauteur",
+        competences:["Lecture isométriques","Filetage"],
+        disponibilite:"Disponible", distanceKm:18, evaluation:4.0 },
+      { id:"T-006", nom:"Louis-Philippe Nadeau", metier:"tuyauteur",
+        competences:["ASME B31.3","Assemblage tuyauterie haute pression"],
+        disponibilite:"Disponible", distanceKm:30, evaluation:3.8 },
+
+      // MANŒUVRES (7)
+      { id:"N-001", nom:"Kevin Dubé", metier:"manoeuvre",
+        competences:["Manutention","Nettoyage industriel","Élingage de base"],
+        disponibilite:"Disponible", distanceKm:6, evaluation:4.0 },
+      { id:"N-002", nom:"Jonathan Martel", metier:"manoeuvre",
+        competences:["Manutention","Travail en hauteur"],
+        disponibilite:"Disponible", distanceKm:19, evaluation:3.7 },
+      { id:"N-003", nom:"Stéphanie Gagné", metier:"manoeuvre",
+        competences:["Nettoyage industriel","Espaces clos"],
+        disponibilite:"Sur chantier", distanceKm:24, evaluation:4.3 },
+      { id:"N-004", nom:"Karine Lavoie", metier:"manoeuvre",
+        competences:["Manutention","Travail en hauteur","Espaces clos"],
+        disponibilite:"Disponible", distanceKm:12, evaluation:4.5 },
+      { id:"N-005", nom:"Mathieu Hébert", metier:"manoeuvre",
+        competences:["Nettoyage industriel","Élingage de base"],
+        disponibilite:"Disponible", distanceKm:30, evaluation:3.9 },
+      { id:"N-006", nom:"Simon Gendron", metier:"manoeuvre",
+        competences:["Manutention","Nettoyage industriel"],
+        disponibilite:"Disponible", distanceKm:16, evaluation:3.8 },
+      { id:"N-007", nom:"Isabelle Côté", metier:"manoeuvre",
+        competences:["Espaces clos","Travail en hauteur"],
+        disponibilite:"Disponible", distanceKm:21, evaluation:4.1 }
+    ];
+
+    // =========================
+    // 7 PROJETS (dates + slots + métiers + compétences)
+    // =========================
+    const projects = [
+      {
+        id:"P-101",
+        nom:"Arrêt chaudière – Bécancour",
+        metier:"soudeur",
+        competencesRequises:["MIG","Espaces clos","ASP"],
+        debut:"2025-01-10",
+        fin:"2025-01-18",
+        slots:3
+      },
+      {
+        id:"P-102",
+        nom:"Remplacement convoyeur – Trois-Rivières",
+        metier:"mecanicien",
+        competencesRequises:["Maintenance préventive","Alignement","Hydraulique"],
+        debut:"2025-01-12",
+        fin:"2025-01-25",
+        slots:3
+      },
+      {
+        id:"P-103",
+        nom:"Ligne vapeur HP – Shawinigan",
+        metier:"tuyauteur",
+        competencesRequises:["Lecture isométriques","TIG inox","ASME B31.3"],
+        debut:"2025-01-20",
+        fin:"2025-02-02",
+        slots:2
+      },
+      {
+        id:"P-104",
+        nom:"Nettoyage silo – Bécancour",
+        metier:"manoeuvre",
+        competencesRequises:["Nettoyage industriel","Travail en hauteur","Espaces clos"],
+        debut:"2025-01-15",
+        fin:"2025-01-19",
+        slots:3
+      },
+      {
+        id:"P-105",
+        nom:"Projet inox – Québec",
+        metier:"soudeur",
+        competencesRequises:["TIG inox","Soudure inox","Lecture plan"],
+        debut:"2025-02-01",
+        fin:"2025-02-15",
+        slots:3
+      },
+      {
+        id:"P-106",
+        nom:"Maintenance usine – Laval",
+        metier:"mecanicien",
+        competencesRequises:["Maintenance corrective","Pneumatique"],
+        debut:"2025-01-28",
+        fin:"2025-02-10",
+        slots:2
+      },
+      {
+        id:"P-107",
+        nom:"Projet multi-équipes – Port de Montréal",
+        metier:"manoeuvre",
+        competencesRequises:["Manutention","Élingage de base"],
+        debut:"2025-02-05",
+        fin:"2025-02-20",
+        slots:4
+      }
+    ];
+
+    // =========================
+    // Helpers dates
+    // =========================
+    function parseDate(str) {
+      return new Date(str + "T00:00:00");
+    }
+
+    function projectsOverlap(p1, p2) {
+      const s1 = parseDate(p1.debut);
+      const e1 = parseDate(p1.fin);
+      const s2 = parseDate(p2.debut);
+      const e2 = parseDate(p2.fin);
+      // Pas de chevauchement si un projet se termine avant que l'autre commence
+      if (e1 <= s2 || e2 <= s1) return false;
+      return true;
+    }
+
+    // =========================
+    // Scoring : Compétence > Évaluation > Distance
+    // + Légère pénalité si l'employé est déjà sur plusieurs projets
+    // =========================
+    function scoreEmployeeForProject(emp, project, employeeLoad) {
+      // Hard filters
+      if (emp.metier !== project.metier) return null;
+      if (!emp.disponibilite.toLowerCase().includes("disponible")) return null;
+
+      const required = project.competencesRequises.map(c => c.toLowerCase());
+      const empSkills = emp.competences.map(c => c.toLowerCase());
+
+      const matched = required.filter(r => empSkills.includes(r)).length;
+      const competenceScore = matched / required.length; // 0..1
+
+      if (competenceScore === 0) return null; // On exige au moins 1 compétence pertinente
+
+      const evalScore = Math.min(Math.max(emp.evaluation, 0), 5) / 5; // 0..1
+
+      // distance : 0 km = 1, 50 km+ = 0
+      const distanceScore = Math.max(0, 1 - (emp.distanceKm / 50));
+
+      // charge de travail : plus l'employé a de projets, plus on réduit légèrement son score
+      const load = employeeLoad[emp.id] || 0;
+      const loadFactor = 1 / (1 + load * 0.5); // 1, 0.66, 0.5, etc.
+
+      // Pondération de base : compétences 50%, évaluation 30%, distance 20%
+      let baseScore = 0.5 * competenceScore + 0.3 * evalScore + 0.2 * distanceScore;
+
+      const finalScore = baseScore * loadFactor;
+
+      return {
+        finalScore,
+        competenceScore,
+        evalScore,
+        distanceScore,
+        matched,
+        loadFactor
+      };
+    }
+
+    // =========================
+    // Planification globale
+    // =========================
+    function planAllProjectsGlobally() {
+      // Sort projets par date de début
+      const sortedProjects = [...projects].sort(
+        (a, b) => parseDate(a.debut) - parseDate(b.debut)
+      );
+
+      // Assignations
+      const assignments = {};       // projectId -> [{emp, score}]
+      const employeeAssignments = {}; // empId -> [projectId]
+      const employeeLoad = {};        // empId -> nombre d'affectations
+
+      for (const p of sortedProjects) {
+        assignments[p.id] = [];
+      }
+
+      for (const project of sortedProjects) {
+        for (let slot = 0; slot < project.slots; slot++) {
+          const candidates = [];
+
+          for (const emp of employees) {
+            // Vérifier chevauchement de dates avec projets déjà assignés
+            const assignedProjects = employeeAssignments[emp.id] || [];
+            let conflit = false;
+            for (const pid of assignedProjects) {
+              const ap = projects.find(pr => pr.id === pid);
+              if (ap && projectsOverlap(ap, project)) {
+                conflit = true;
+                break;
+              }
+            }
+            if (conflit) continue;
+
+            const s = scoreEmployeeForProject(emp, project, employeeLoad);
+            if (s) {
+              candidates.push({ emp, s });
+            }
+          }
+
+          if (candidates.length === 0) {
+            // Pas de candidat pour ce slot
+            continue;
+          }
+
+          // Trier par score décroissant
+          candidates.sort((a, b) => b.s.finalScore - a.s.finalScore);
+          const chosen = candidates[0];
+
+          assignments[project.id].push(chosen);
+
+          // Mettre à jour la charge
+          if (!employeeAssignments[chosen.emp.id]) {
+            employeeAssignments[chosen.emp.id] = [];
+          }
+          employeeAssignments[chosen.emp.id].push(project.id);
+          employeeLoad[chosen.emp.id] = (employeeLoad[chosen.emp.id] || 0) + 1;
+        }
+      }
+
+      return { assignments, employeeAssignments, employeeLoad };
+    }
+
+    // =========================
+    // UI
+    // =========================
+    const projectsListEl = document.getElementById("projectsList");
+    const assignmentsContainer = document.getElementById("assignmentsContainer");
+    const summaryText = document.getElementById("summaryText");
+    const planAllBtn = document.getElementById("planAllBtn");
+
+    // Afficher la liste des projets
+    function renderProjectsList() {
+      projectsListEl.innerHTML = "";
+      const sorted = [...projects].sort(
+        (a, b) => parseDate(a.debut) - parseDate(b.debut)
+      );
+      for (const p of sorted) {
+        const div = document.createElement("div");
+        div.className = "project-line";
+        div.innerHTML = `
+          <strong>${p.id} – ${p.nom}</strong>
+          <div class="project-meta">
+            <span>Métier : ${p.metier}</span>
+            <span>Dates : ${p.debut} → ${p.fin}</span>
+            <span>Postes : ${p.slots}</span><br/>
+            <span>Compétences : ${p.competencesRequises.join(", ")}</span>
+          </div>
+        `;
+        projectsListEl.appendChild(div);
+      }
+    }
+
+    function renderAssignments(result) {
+      const { assignments, employeeAssignments, employeeLoad } = result;
+
+      // Stat globales
+      let totalSlots = projects.reduce((sum, p) => sum + p.slots, 0);
+      let totalAssigned = Object.values(assignments).reduce(
+        (sum, arr) => sum + arr.length,
+        0
+      );
+
+      summaryText.textContent =
+        `Postes remplis : ${totalAssigned}/${totalSlots} • ` +
+        `Employés utilisés : ${Object.keys(employeeAssignments).length}/${employees.length}`;
+
+      assignmentsContainer.innerHTML = "";
+
+      const sorted = [...projects].sort(
+        (a, b) => parseDate(a.debut) - parseDate(b.debut)
+      );
+
+      for (const p of sorted) {
+        const block = document.createElement("div");
+        block.className = "project-block";
+
+        const title = document.createElement("div");
+        title.className = "project-block-title";
+        title.innerHTML = `
+          <h3>${p.id} – ${p.nom}</h3>
+          <span>${p.debut} → ${p.fin} • ${p.metier} • ${p.slots} postes</span>
+        `;
+
+        block.appendChild(title);
+
+        const list = document.createElement("div");
+        list.className = "assignment-list";
+
+        const assigned = assignments[p.id] || [];
+
+        if (assigned.length === 0) {
+          const no = document.createElement("div");
+          no.className = "no-assign";
+          no.textContent = "Aucun employé disponible/compatible pour ce projet.";
+          list.appendChild(no);
+        } else {
+          for (const { emp, s } of assigned) {
+            const card = document.createElement("div");
+            card.className = "assignment-card";
+
+            const top = document.createElement("div");
+            top.className = "assignment-top";
+            top.innerHTML = `
+              <span class="name">${emp.nom}</span>
+              <span>Score : ${(s.finalScore * 100).toFixed(1)}/100</span>
+            `;
+
+            const pills = document.createElement("div");
+            pills.className = "pill-row";
+            pills.innerHTML = `
+              <span>${emp.metier}</span>
+              <span>Éval : ${emp.evaluation.toFixed(1)}/5</span>
+              <span>Dist : ${emp.distanceKm} km</span>
+              <span>Affectations totales : ${employeeLoad[emp.id] || 1}</span>
+            `;
+
+            const detail = document.createElement("div");
+            detail.className = "assignment-detail";
+            detail.innerHTML = `
+              Compétences : ${emp.competences.join(", ")}<br/>
+              Match compétences : ${s.matched}/${p.competencesRequises.length}<br/>
+              <strong>Détail du score</strong><br/>
+              - Compétences : ${(s.competenceScore * 100).toFixed(0)}% (poids 50%)<br/>
+              - Évaluation : ${(s.evalScore * 100).toFixed(0)}% (poids 30%)<br/>
+              - Distance : ${(s.distanceScore * 100).toFixed(0)}% (poids 20%)<br/>
+              - Facteur de charge : ${(s.loadFactor * 100).toFixed(0)}%
+            `;
+
+            card.appendChild(top);
+            card.appendChild(pills);
+            card.appendChild(detail);
+            list.appendChild(card);
+          }
+        }
+
+        block.appendChild(list);
+        assignmentsContainer.appendChild(block);
+      }
+    }
+
+    planAllBtn.addEventListener("click", () => {
+      const result = planAllProjectsGlobally();
+      renderAssignments(result);
+    });
+
+    renderProjectsList();
+  </script>
+</body>
+</html>
