@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Planif IA – Affectation globale (HAUT VOLUME)</title>
+  <title>Planif IA – Gestion et Affectation (HAUT VOLUME)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Styles CSS inchangés pour une meilleure présentation */
+    /* Styles CSS */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -14,7 +14,7 @@
       padding: 24px;
     }
     .app {
-      max-width: 1200px;
+      max-width: 1600px; /* Élargissement pour 3 colonnes */
       margin: 0 auto;
     }
     header {
@@ -35,7 +35,7 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: 1.1fr 1.4fr;
+      grid-template-columns: 1fr 1fr 1.8fr; /* 3 colonnes */
       gap: 24px;
       align-items: flex-start;
     }
@@ -45,6 +45,7 @@
       padding: 20px;
       border: 1px solid #1f2937;
       box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+      min-height: 400px;
     }
     .card h2 {
       font-size: 1.15rem;
@@ -60,7 +61,7 @@
       margin-bottom: 4px;
       color: #9ca3af;
     }
-    select, input {
+    select, input, textarea {
       width: 100%;
       padding: 6px 8px;
       margin-bottom: 8px;
@@ -69,8 +70,9 @@
       background: #020617;
       color: #e5e7eb;
       font-size: 0.85rem;
+      resize: vertical;
     }
-    select:focus, input:focus {
+    select:focus, input:focus, textarea:focus {
       outline: 2px solid #38bdf8;
       border-color: #38bdf8;
     }
@@ -102,19 +104,21 @@
       border-color: #4b5563;
       transform: translateY(0);
     }
-    .badge {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid #4b5563;
-      color: #9ca3af;
-    }
     .projects-list {
-      margin-top: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
       font-size: 0.8rem;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .projects-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .projects-list::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 3px;
     }
     .project-line {
       padding: 8px 10px;
@@ -122,18 +126,35 @@
       border: 1px solid #1f2937;
       background: #020617;
     }
-    .project-line strong {
-      display: block;
-      font-size: 0.9rem;
+    .project-line strong { display: block; font-size: 0.9rem; }
+    .project-meta { margin-top: 2px; color: #9ca3af; }
+    .project-meta span { margin-right: 8px; }
+
+    /* Styles pour la gestion des données */
+    .data-management h2 { margin-bottom: 12px; }
+    .data-area { margin-bottom: 16px; }
+    .data-area label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    .project-meta {
-      margin-top: 2px;
-      color: #9ca3af;
+    .data-area textarea {
+        height: 300px;
+        font-family: monospace;
+        font-size: 0.75rem;
     }
-    .project-meta span {
-      margin-right: 8px;
+    .data-status {
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
     }
-    /* Styles pour les résultats (inchangés) */
+    .data-status.success { background: #166534; color: #dcfce7; }
+    .data-status.error { background: #991b1b; color: #fee2e2; }
+    .data-controls { margin-top: 10px; }
+    .data-controls button { margin-top: 0; }
+    
+    /* Styles de résultat (inchangés) */
     .result-header {
       display: flex;
       justify-content: space-between;
@@ -226,8 +247,17 @@
       margin-top: 8px;
       font-size: 0.78rem;
       color: #9ca3af;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 10px;
     }
-    /* Styles pour la gestion des conflits */
+    .fixed-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .fixed-list::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 3px;
+    }
     .fixed-item {
       display: flex;
       justify-content: space-between;
@@ -248,7 +278,7 @@
       margin-top: 2px;
       margin-bottom: 4px;
     }
-    .fixed-item-solution { /* Nouveau style pour la solution */
+    .fixed-item-solution {
       font-size: 0.75rem;
       color: #38bdf8;
       background: #0c4a6e30;
@@ -260,9 +290,7 @@
     .fixed-item-success {
       color: #34d399;
     }
-    .fixed-item-content {
-        flex-grow: 1; 
-    }
+    .fixed-item-content { flex-grow: 1; }
     .delete-fixed-btn { 
         background: #ef4444; 
         color: white; 
@@ -278,11 +306,7 @@
         transition: background-color 0.2s;
         flex-shrink: 0;
     }
-    .delete-fixed-btn:hover {
-        background: #dc2626;
-    }
-    /* FIN MISE À JOUR */
-    
+    .delete-fixed-btn:hover { background: #dc2626; }
     .score-bar-container {
       background: #1e293b;
       border-radius: 4px;
@@ -302,43 +326,43 @@
       font-weight: 700;
     }
     
+    @media (max-width: 1400px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .grid > section:last-child { grid-column: 1 / span 2; }
+    }
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
+      .grid > section:last-child { grid-column: 1 / span 1; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <h1>Planificateur IA – Affectation globale (v3.4)</h1>
+      <h1>Planificateur IA – Affectation globale (v4.0)</h1>
       <p>
-        Répartition globale des employés sur l’ensemble des projets, en respectant :
-        <strong>Disponibilité > Compétences > Évaluation > Distance</strong>.
+        **Mode Gestion des Données Actif.** Modifiez les données JSON ci-dessous et cliquez sur "Générer" pour tester vos scénarios.
       </p>
       <div class="tagline">
-        Mode Haut Volume : 150 employés générés / 25 projets.
+        Priorité : **Disponibilité** > Compétences > Évaluation > Distance.
       </div>
     </header>
 
     <div class="grid">
       <section class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <div>
-            <h2>1. Directives et Contrôles</h2>
-            <small id="databaseSummary">Base de données : 150 employés / 25 projets.</small>
-          </div>
-        </div>
-
+        <h2>1. Planification & Directives</h2>
+        <small id="databaseSummary">Base de données : N/A</small>
+        
         <div style="margin-top:10px; margin-bottom:4px;">
           <button id="planAllBtn">Générer une nouvelle planification (IA)</button>
         </div>
         <small style="display:block;margin-top:2px;color:#6b7280;font-size:0.75rem;">
-          Chaque clic génère une nouvelle version aléatoire.
+          L'IA utilisera les données des zones de texte JSON.
         </small>
 
         <div style="margin-top:16px; border-top:1px solid #1f2937; padding-top:12px;">
           <h3 style="font-size:0.95rem;margin-bottom:4px;">Directive fixe (Manuelle)</h3>
-          <small>Attribuer un employé à un projet. L’IA doit impérativement respecter cette contrainte (si possible).</small>
+          <small>Attribuer un employé à un projet.</small>
 
           <label style="margin-top:8px;">Projet</label>
           <select id="fixedProjectSelect"></select>
@@ -355,16 +379,38 @@
         </div>
 
         <div style="margin-top:24px; border-top:1px solid #1f2937; padding-top:12px;">
-            <h3 style="font-size:0.95rem;">Liste des projets</h3>
+            <h3 style="font-size:0.95rem;">Projets chargés (Aperçu)</h3>
         </div>
         <div class="projects-list" id="projectsList"></div>
+      </section>
+
+      <section class="card data-management">
+        <h2>2. Gestion des Données (JSON)</h2>
+        <small id="dataLoadStatusText" style="margin-bottom:10px;">Chargement par défaut effectué.</small>
+
+        <div class="data-controls">
+            <button id="loadDataBtn">Charger les données & Mettre à jour la base</button>
+            <button id="saveDataBtn" class="btn-secondary">Sauvegarder (Localement)</button>
+            <button id="resetDataBtn" class="btn-secondary">Réinitialiser (Données par défaut)</button>
+        </div>
+        <div id="dataStatus" class="data-status"></div>
+
+        <div class="data-area" style="margin-top:16px;">
+            <label for="employeesJSON">Employés (JSON Array)</label>
+            <textarea id="employeesJSON"></textarea>
+        </div>
+
+        <div class="data-area">
+            <label for="projectsJSON">Projets (JSON Array)</label>
+            <textarea id="projectsJSON"></textarea>
+        </div>
       </section>
 
       <section class="card">
         <div class="result-header">
           <div>
-            <h2>2. Résultat de la planification</h2>
-            <small id="summaryText">Clique sur “Générer une nouvelle planification (IA)” pour commencer.</small>
+            <h2>3. Résultat de la planification</h2>
+            <small id="summaryText">Cliquez sur “Générer une nouvelle planification (IA)” pour commencer.</small>
           </div>
         </div>
         <div id="assignmentsContainer"></div>
@@ -375,7 +421,7 @@
   <script>
     
     // ==========================================================
-    // GÉNÉRATION DE DONNÉES HAUT VOLUME (150 Employés / 25 Projets)
+    // GÉNÉRATION DE DONNÉES PAR DÉFAUT (150 Employés / 25 Projets)
     // ==========================================================
 
     const allSkills = {
@@ -402,9 +448,6 @@
     function generateEmployees(metier, count, prefix) {
         const employees = [];
         const uniqueNames = new Set();
-
-        // MISE À JOUR : Disponibilités Aléatoires
-        // 3/5 chances d'être disponible
         const disponibilites = ["Disponible", "Disponible", "Disponible", "Sur chantier", "En congé"];
 
         for (let i = 1; i <= count; i++) {
@@ -424,7 +467,7 @@
                 nom,
                 metier,
                 competences: getRandomSkills(metier, competenceRange.min, competenceRange.max),
-                disponibilite: getRandomElement(disponibilites), // Assignation aléatoire
+                disponibilite: getRandomElement(disponibilites), 
                 distanceKm,
                 evaluation
             });
@@ -432,30 +475,26 @@
         return employees;
     }
 
-    const mecaniciens = generateEmployees('mecanicien', 40, 'M');
-    const soudeurs = generateEmployees('soudeur', 40, 'S');
-    const tuyauteurs = generateEmployees('tuyauteur', 35, 'T');
-    const manoeuvres = generateEmployees('manoeuvre', 35, 'N');
+    // Données par défaut (initiales)
+    const initialEmployees = [
+      ...generateEmployees('mecanicien', 40, 'M'),
+      ...generateEmployees('soudeur', 40, 'S'),
+      ...generateEmployees('tuyauteur', 35, 'T'),
+      ...generateEmployees('manoeuvre', 35, 'N')
+    ];
     
-    const employees = [...mecaniciens, ...soudeurs, ...tuyauteurs, ...manoeuvres];
-
     // Trier les employés par nom pour le <select> des directives
-    employees.sort((a, b) => a.nom.localeCompare(b.nom));
+    initialEmployees.sort((a, b) => a.nom.localeCompare(b.nom));
 
 
-    // =========================
     // 25 PROJETS (DONNÉES INCHANGÉES)
-    // =========================
-    const projects = [
-      // Janvier 2026
+    const initialProjects = [
       { id:"P-101", nom:"Arrêt chaudière – Bécancour", metier:"soudeur", competencesRequises:["MIG","Espaces clos","ASP"], debut:"2026-01-10", fin:"2026-01-18", slots:4 },
       { id:"P-102", nom:"Remplacement convoyeur – Trois-Rivières", metier:"mecanicien", competencesRequises:["Maintenance préventive","Alignement","Hydraulique"], debut:"2026-01-12", fin:"2026-01-25", slots:5 },
       { id:"P-103", nom:"Ligne vapeur HP – Shawinigan", metier:"tuyauteur", competencesRequises:["Lecture isométriques","ASME B31.3"], debut:"2026-01-20", fin:"2026-02-02", slots:3 },
       { id:"P-104", nom:"Nettoyage silo – Bécancour", metier:"manoeuvre", competencesRequises:["Nettoyage industriel","Espaces clos"], debut:"2026-01-15", fin:"2026-01-19", slots:4 },
       { id:"P-105", nom:"Projet inox – Québec", metier:"soudeur", competencesRequises:["TIG inox","Soudure inox","Lecture plan"], debut:"2026-02-01", fin:"2026-02-15", slots:5 },
       { id:"P-106", nom:"Maintenance usine – Laval", metier:"mecanicien", competencesRequises:["Maintenance corrective","Pneumatique","Réducteur"], debut:"2026-01-28", fin:"2026-02-10", slots:3 },
-      
-      // Février 2026
       { id:"P-107", nom:"Installation pompe – Sherbrooke", metier:"mecanicien", competencesRequises:["Hydraulique","Analyse vibration"], debut:"2026-02-05", fin:"2026-02-12", slots:2 },
       { id:"P-108", nom:"Rénovation tuyauterie – Lévis", metier:"tuyauteur", competencesRequises:["Filetage","Raccordement de vannes","Test d'étanchéité"], debut:"2026-02-10", fin:"2026-02-28", slots:5 },
       { id:"P-109", nom:"Fabrication de structures – Montréal", metier:"soudeur", competencesRequises:["MIG","Lecture plan","Pont roulant"], debut:"2026-02-18", fin:"2026-03-05", slots:4 },
@@ -463,16 +502,12 @@
       { id:"P-111", nom:"Arrêt printemps – Sorel-Tracy", metier:"tuyauteur", competencesRequises:["Lecture isométriques","Assemblage tuyauterie haute pression","Soudure orbitale"], debut:"2026-03-01", fin:"2026-03-15", slots:4 },
       { id:"P-112", nom:"Optimisation production – Drummondville", metier:"mecanicien", competencesRequises:["Usinage","Alignement"], debut:"2026-02-20", fin:"2026-03-05", slots:2 },
       { id:"P-113", nom:"Travail en hauteur – Granby", metier:"manoeuvre", competencesRequises:["Travail en hauteur","Élingage de base"], debut:"2026-03-08", fin:"2026-03-12", slots:3 },
-      
-      // Mars 2026
       { id:"P-114", nom:"Changement de ligne – Thetford Mines", metier:"soudeur", competencesRequises:["TIG","ARC","ASP"], debut:"2026-03-10", fin:"2026-03-20", slots:3 },
       { id:"P-115", nom:"Réparation Hydraulique – Saint-Jean", metier:"mecanicien", competencesRequises:["Hydraulique","Maintenance corrective"], debut:"2026-03-18", fin:"2026-03-25", slots:2 },
       { id:"P-116", nom:"Projet TIG Inox – Alma", metier:"soudeur", competencesRequises:["TIG inox","Soudure inox"], debut:"2026-03-25", fin:"2026-04-05", slots:4 },
       { id:"P-117", nom:"Déplacement machinerie – Val-d'Or", metier:"manoeuvre", competencesRequises:["Manutention","Permis cariste","Élingage de base"], debut:"2026-03-15", fin:"2026-03-30", slots:5 },
       { id:"P-118", nom:"Tuyauterie Process – Gaspé", metier:"tuyauteur", competencesRequises:["Raccordement de vannes","ASME B31.3","Test d'étanchéité"], debut:"2026-03-28", fin:"2026-04-10", slots:3 },
       { id:"P-119", nom:"Soudure haute pression – Sept-Îles", metier:"soudeur", competencesRequises:["ARC","Espaces clos"], debut:"2026-04-01", fin:"2026-04-08", slots:2 },
-      
-      // Avril 2026
       { id:"P-120", nom:"Révision convoyeur – Victoriaville", metier:"mecanicien", competencesRequises:["Montage de convoyeur","Maintenance préventive","Alignement"], debut:"2026-04-05", fin:"2026-04-18", slots:4 },
       { id:"P-121", nom:"Nettoyage final – Baie-Comeau", metier:"manoeuvre", competencesRequises:["Nettoyage industriel","Sécurité SIMDUT"], debut:"2026-04-10", fin:"2026-04-15", slots:3 },
       { id:"P-122", nom:"Modernisation usine – Joliette", metier:"mecanicien", competencesRequises:["Hydraulique","Pneumatique","Réducteur"], debut:"2026-04-15", fin:"2026-04-30", slots:5 },
@@ -480,11 +515,104 @@
       { id:"P-124", nom:"Espaces Clos – Rimouski", metier:"manoeuvre", competencesRequises:["Espaces clos","Travail en hauteur"], debut:"2026-04-20", fin:"2026-04-25", slots:4 },
       { id:"P-125", nom:"Réparation Structure – Trois-Rivières", metier:"soudeur", competencesRequises:["MIG","Lecture plan"], debut:"2026-04-22", fin:"2026-04-30", slots:3 },
     ];
+    
+    // Variables globales qui seront mises à jour par l'UI
+    let employees = [];
+    let projects = [];
+    let fixedAssignments = [];
+
+    // ===========================================
+    // LOGIQUE DE GESTION DES DONNÉES (JSON / Local Storage)
+    // ===========================================
+
+    const employeesJSONArea = document.getElementById("employeesJSON");
+    const projectsJSONArea = document.getElementById("projectsJSON");
+    const dataStatus = document.getElementById("dataStatus");
+    const databaseSummary = document.getElementById("databaseSummary");
+    
+    function setStatus(message, isError = false) {
+        dataStatus.textContent = message;
+        dataStatus.className = "data-status " + (isError ? "error" : "success");
+    }
+
+    function loadDataFromUI() {
+        try {
+            // 1. Charger et parser les employés
+            const loadedEmployees = JSON.parse(employeesJSONArea.value);
+            if (!Array.isArray(loadedEmployees) || loadedEmployees.length === 0) {
+                throw new Error("La liste des employés est vide ou n'est pas un tableau valide.");
+            }
+            employees = loadedEmployees.sort((a, b) => a.nom.localeCompare(b.nom));
+
+            // 2. Charger et parser les projets
+            const loadedProjects = JSON.parse(projectsJSONArea.value);
+            if (!Array.isArray(loadedProjects) || loadedProjects.length === 0) {
+                throw new Error("La liste des projets est vide ou n'est pas un tableau valide.");
+            }
+            projects = loadedProjects;
+
+            // 3. Mettre à jour l'UI de Planification
+            renderProjectsList();
+            initFixedSelectors();
+            databaseSummary.textContent = `Base de données : ${employees.length} employés / ${projects.length} projets.`;
+            setStatus("Données chargées avec succès. Prêt pour la planification.");
+            
+            return true;
+        } catch (e) {
+            setStatus("Erreur JSON : " + e.message, true);
+            return false;
+        }
+    }
+
+    function displayCurrentData(empData, projData) {
+        employeesJSONArea.value = JSON.stringify(empData, null, 2);
+        projectsJSONArea.value = JSON.stringify(projData, null, 2);
+    }
+
+    function initializeData() {
+        const storedEmployees = localStorage.getItem('planif_employees');
+        const storedProjects = localStorage.getItem('planif_projects');
+
+        if (storedEmployees && storedProjects) {
+            try {
+                displayCurrentData(JSON.parse(storedEmployees), JSON.parse(storedProjects));
+                loadDataFromUI();
+                document.getElementById("dataLoadStatusText").textContent = "Données chargées depuis la sauvegarde locale.";
+            } catch (e) {
+                // En cas d'erreur de parsing du local storage, charger les données par défaut
+                displayCurrentData(initialEmployees, initialProjects);
+                loadDataFromUI();
+                document.getElementById("dataLoadStatusText").textContent = "Sauvegarde locale corrompue. Chargement des données par défaut.";
+            }
+        } else {
+            // Pas de sauvegarde locale, charger les données par défaut
+            displayCurrentData(initialEmployees, initialProjects);
+            loadDataFromUI();
+            document.getElementById("dataLoadStatusText").textContent = "Chargement des données par défaut.";
+        }
+    }
+
+    function saveDataToLocalStorage() {
+        localStorage.setItem('planif_employees', employeesJSONArea.value);
+        localStorage.setItem('planif_projects', projectsJSONArea.value);
+        setStatus("Données sauvegardées dans le stockage local du navigateur.", false);
+    }
+    
+    function resetDataToDefault() {
+        localStorage.removeItem('planif_employees');
+        localStorage.removeItem('planif_projects');
+        fixedAssignments = [];
+        displayCurrentData(initialEmployees, initialProjects);
+        loadDataFromUI();
+        renderFixedList();
+        setStatus("Données réinitialisées aux valeurs par défaut.", false);
+    }
 
 
-    // =========================
-    // Helpers, Logique et UI
-    // =========================
+    // ===========================================
+    // LOGIQUE DE PLANIFICATION (INCHANGÉE)
+    // ===========================================
+
     function parseDate(str) {
       return new Date(str + "T00:00:00");
     }
@@ -498,7 +626,6 @@
       return true;
     }
 
-    // Fonction de brassage (utile pour l'aléatoire lors de l'attribution)
     function shuffleArray(arr) {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -508,37 +635,35 @@
       return a;
     }
 
-    let fixedAssignments = [];
-
-    // Fonction pour supprimer une directive
     function removeFixedAssignment(index) {
       if (index >= 0 && index < fixedAssignments.length) {
         fixedAssignments.splice(index, 1);
         renderFixedList();
-        // Avertir l'utilisateur de relancer la planif après suppression
         summaryText.textContent = "Directive supprimée. Cliquez sur 'Générer une nouvelle planification (IA)' pour mettre à jour les affectations.";
       }
     }
 
 
     function scoreEmployeeForProject(emp, project, employeeLoad) {
-      // Filtre de Disponibilité (Priorité Absolue)
-      if (!emp.disponibilite.toLowerCase().includes("disponible")) return null; 
+      // Filtre de Disponibilité
+      if (!emp.disponibilite || !emp.disponibilite.toLowerCase().includes("disponible")) return null; 
 
       if (emp.metier !== project.metier) return null;
 
-      const required = project.competencesRequises.map(c => c.toLowerCase());
-      const empSkills = emp.competences.map(c => c.toLowerCase());
+      const required = (project.competencesRequises || []).map(c => c.toLowerCase());
+      const empSkills = (emp.competences || []).map(c => c.toLowerCase());
 
       const matched = required.filter(r => empSkills.includes(r)).length;
       
       // Filtre : doit avoir au moins 1 compétence requise
-      if (matched === 0) return null; 
+      if (matched === 0 && required.length > 0) return null; 
+      
+      // Sécurité : éviter la division par zéro si required.length est 0 (bien que les données soient structurées)
+      const competenceScore = required.length > 0 ? matched / required.length : 1; 
 
-      const competenceScore = matched / required.length;
-      const evalScore = Math.min(Math.max(emp.evaluation, 0), 5) / 5;
+      const evalScore = Math.min(Math.max(emp.evaluation || 0, 0), 5) / 5;
       const maxDistance = 50;
-      const distanceScore = Math.max(0, 1 - (emp.distanceKm / maxDistance));
+      const distanceScore = Math.max(0, 1 - ((emp.distanceKm || maxDistance) / maxDistance));
 
       let baseScore =
         0.5 * competenceScore +
@@ -561,10 +686,14 @@
     }
 
     function planAllProjectsGlobally() {
-      // Afficher un message de chargement pour les grands ensembles de données
-      assignmentsContainer.innerHTML = '<p style="color:#38bdf8;">Planification en cours... Cela peut prendre un instant avec un volume de données élevé.</p>';
+      // Tenter de recharger les données avant chaque planif
+      if (!loadDataFromUI()) {
+        assignmentsContainer.innerHTML = '<p style="color:#f97373;">Erreur de chargement des données. Veuillez corriger le JSON dans la colonne 2.</p>';
+        return;
+      }
+
+      assignmentsContainer.innerHTML = '<p style="color:#38bdf8;">Planification en cours...</p>';
       
-      // Trier les projets par date de début
       const sortedProjects = [...projects].sort(
         (a, b) => parseDate(a.debut) - parseDate(b.debut)
       );
@@ -577,8 +706,7 @@
         assignments[p.id] = [];
       }
 
-      // Réinitialiser les statuts des directives
-      fixedAssignments = fixedAssignments.map(d => ({ ...d, status: 'pending', reason: null }));
+      fixedAssignments = fixedAssignments.map(d => ({ ...d, status: 'pending', reason: null, conflitProjId: null }));
       
       // 1) Appliquer d'abord les directives fixes
       for (let i = 0; i < fixedAssignments.length; i++) {
@@ -590,33 +718,33 @@
 
         let status = 'assigned';
         let reason = null;
+        let conflitProjId = null;
         
-        // Vérification de la disponibilité du candidat fixé
-        if (!emp.disponibilite.toLowerCase().includes("disponible")) {
+        if (!emp.disponibilite || !emp.disponibilite.toLowerCase().includes("disponible")) {
             status = 'conflict_dispo';
-            reason = `Employé non disponible (${emp.disponibilite})`;
+            reason = `Employé non disponible (${emp.disponibilite || 'Inconnu'})`;
         } else if (emp.metier !== proj.metier) {
             status = 'conflict_metier';
-            reason = `Métier non compatible (${emp.metier} vs ${proj.metier})`;
+            reason = `Métier non compatible (${emp.metier || 'Inconnu'} vs ${proj.metier || 'Inconnu'})`;
         } else if (assignments[proj.id].length >= proj.slots) {
             status = 'conflict_slots';
             reason = `Projet déjà complet (${proj.slots} slots remplis)`;
         } else {
             const alreadyForEmp = employeeAssignments[emp.id] || [];
             let conflit = false;
-            let conflitProjId = null;
             for (const pid of alreadyForEmp) {
                 const ap = projects.find(pr => pr.id === pid);
                 if (ap && projectsOverlap(ap, proj)) {
                     conflit = true;
                     conflitProjId = ap.id;
+                    reason = `Chevauchement avec ${ap.nom} (${ap.id})`;
                     break;
                 }
             }
 
             if (conflit) {
                 status = 'conflict_overlap';
-                reason = `Chevauchement avec ${conflitProjId}`;
+                fixedAssignments[i].conflitProjId = conflitProjId;
             }
         }
 
@@ -628,8 +756,8 @@
 
         if (status === 'assigned') {
             const score = scoreEmployeeForProject(emp, proj, employeeLoad) || {
-                finalScore: 1.0, competenceScore: 1.0, evalScore: emp.evaluation / 5, 
-                distanceScore: Math.max(0, 1 - (emp.distanceKm / 50)), matched: proj.competencesRequises.length, loadFactor: 1 
+                finalScore: 1.0, competenceScore: 1.0, evalScore: (emp.evaluation || 0) / 5, 
+                distanceScore: Math.max(0, 1 - ((emp.distanceKm || 50) / 50)), matched: (proj.competencesRequises || []).length, loadFactor: 1 
             };
             
             assignments[proj.id].push({ emp, s: score, isFixed: true });
@@ -642,7 +770,6 @@
 
       // 2) Compléter les slots restants avec IA + shuffle
       for (const project of sortedProjects) {
-        // Le shuffle est la clé pour le rebrassage : l'ordre des candidats change à chaque exécution
         const shuffledEmployees = shuffleArray(employees);
 
         for (let slot = assignments[project.id].length; slot < project.slots; slot++) {
@@ -674,7 +801,6 @@
             continue;
           }
 
-          // Le meilleur candidat est choisi
           candidates.sort((a, b) => b.s.finalScore - a.s.finalScore);
           const chosen = candidates[0];
 
@@ -690,13 +816,16 @@
       return { assignments, employeeAssignments, employeeLoad };
     }
 
-    // =========================
-    // UI Éléments et Rendu
-    // =========================
+    // ===========================================
+    // RENDU UI (MODIFIÉ POUR LES NOUVELLES COLONNES/COMMANDES)
+    // ===========================================
     const projectsListEl = document.getElementById("projectsList");
     const assignmentsContainer = document.getElementById("assignmentsContainer");
     const summaryText = document.getElementById("summaryText");
     const planAllBtn = document.getElementById("planAllBtn");
+    const loadDataBtn = document.getElementById("loadDataBtn");
+    const saveDataBtn = document.getElementById("saveDataBtn");
+    const resetDataBtn = document.getElementById("resetDataBtn");
 
     const fixedProjectSelect = document.getElementById("fixedProjectSelect");
     const fixedEmployeeSelect = document.getElementById("fixedEmployeeSelect");
@@ -715,10 +844,9 @@
         div.innerHTML = `
           <strong>${p.id} – ${p.nom}</strong>
           <div class="project-meta">
-            <span>Métier : ${p.metier}</span>
+            <span>Métier : ${p.metier || 'N/A'}</span>
+            <span>Postes : ${p.slots || 0}</span><br/>
             <span>Dates : ${p.debut} → ${p.fin}</span>
-            <span>Postes : ${p.slots}</span><br/>
-            <span>Compétences : ${p.competencesRequises.join(", ")}</span>
           </div>
         `;
         projectsListEl.appendChild(div);
@@ -732,7 +860,6 @@
       }
       fixedList.innerHTML = "";
       
-      // Utilisation de l'index pour la suppression
       fixedAssignments.forEach((d, index) => { 
         const proj = projects.find(pr => pr.id === d.projectId);
         const emp = employees.find(e => e.id === d.empId);
@@ -745,29 +872,28 @@
         let solutionText = '';
         let statusClass = 'fixed-item-success';
         
-        // --- LOGIQUE D'AFFICHAGE DES CONFLITS ET SOLUTIONS ---
         switch(d.status) {
             case 'assigned':
                 statusText = '– Affectation RESPECTÉE.';
                 break;
             case 'conflict_metier':
-                statusText = `– CONFLIT : ${d.reason}`;
-                solutionText = `L'IA ne peut pas forcer le métier. **Action recommandée :** Annuler la directive ou trouver un employé compatible avec ${proj.metier} ou ayant des certifications croisées.`;
+                statusText = `– CONFLIT : Métier (${emp.metier || 'N/A'}) incompatible avec ${proj.metier || 'N/A'}.`;
+                solutionText = `**Action :** Choisir un ${proj.metier} ou vérifier les compétences croisées.`;
                 statusClass = 'fixed-item-error';
                 break;
             case 'conflict_dispo':
-                statusText = `– CONFLIT : ${d.reason}`;
-                solutionText = `**Action recommandée :** Confirmer si la directive est prioritaire (Nécessite intervention RH) ou choisir un employé marqué 'Disponible'.`;
+                statusText = `– CONFLIT : Employé indisponible (${emp.disponibilite || 'N/A'}).`;
+                solutionText = `**Action :** Mettre à jour la disponibilité de l'employé dans la section JSON ou forcer la directive (Risque RH).`;
                 statusClass = 'fixed-item-error';
                 break;
             case 'conflict_slots':
-                statusText = `– CONFLIT : ${d.reason}`;
-                solutionText = `**Action recommandée :** Désaffecter manuellement l'employé avec le score le plus bas sur ${proj.id} ou augmenter la capacité du projet.`;
+                statusText = `– CONFLIT : Projet déjà complet (${proj.slots} slots).`;
+                solutionText = `**Action :** Désaffecter un employé IA pour faire de la place ou augmenter les slots du projet.`;
                 statusClass = 'fixed-item-error';
                 break;
             case 'conflict_overlap':
-                statusText = `– CONFLIT : ${d.reason}`;
-                solutionText = `**Action recommandée :** Examiner les dates. Proposer un échange avec un employé du projet en conflit (${d.reason}) ou vérifier si le projet peut être fractionné.`;
+                statusText = `– CONFLIT : Chevauchement avec le projet ${d.conflitProjId || 'N/A'}.`;
+                solutionText = `**Action :** Examiner les dates. Proposer un échange d'affectation sur ${d.conflitProjId}.`;
                 statusClass = 'fixed-item-error';
                 break;
             default:
@@ -790,10 +916,8 @@
         fixedList.appendChild(div);
       });
       
-      // AJOUT DES ÉVÉNEMENTS POUR LA SUPPRESSION INDIVIDUELLE
       fixedList.querySelectorAll('.delete-fixed-btn').forEach(button => {
         button.addEventListener('click', (e) => {
-          // Utilise data-index pour identifier la directive à supprimer
           const index = e.target.getAttribute('data-index'); 
           removeFixedAssignment(parseInt(index));
         });
@@ -803,7 +927,7 @@
     function renderAssignments(result) {
       const { assignments, employeeAssignments, employeeLoad } = result;
 
-      let totalSlots = projects.reduce((sum, p) => sum + p.slots, 0);
+      let totalSlots = projects.reduce((sum, p) => sum + (p.slots || 0), 0);
       let totalAssigned = Object.values(assignments).reduce(
         (sum, arr) => sum + arr.length,
         0
@@ -863,18 +987,18 @@
             const pills = document.createElement("div");
             pills.className = "pill-row";
             pills.innerHTML = `
-              <span>${emp.metier}</span>
-              <span>Éval : ${emp.evaluation.toFixed(1)}/5</span>
-              <span>Dist : ${emp.distanceKm} km</span>
+              <span>${emp.metier || 'N/A'}</span>
+              <span>Éval : ${(emp.evaluation || 0).toFixed(1)}/5</span>
+              <span>Dist : ${emp.distanceKm || 'N/A'} km</span>
               <span>Affect. tot. : ${employeeLoad[emp.id] || 1}</span>
-              <span>Dispo : ${emp.disponibilite}</span>
+              <span>Dispo : ${emp.disponibilite || 'N/A'}</span>
             `;
 
             const detail = document.createElement("div");
             detail.className = "assignment-detail";
             detail.innerHTML = `
-              Compétences : ${emp.competences.join(", ")}<br/>
-              Match requis : <strong>${(s.matched || 0)}/${p.competencesRequises.length}</strong> (Compétences requises : ${p.competencesRequises.join(", ")})<br/>
+              Compétences : ${(emp.competences || []).join(", ")}<br/>
+              Match requis : <strong>${(s.matched || 0)}/${(p.competencesRequises || []).length}</strong> (Compétences : ${(p.competencesRequises || []).join(", ")})<br/>
               Détail du score pondéré :
               <ul>
                 <li>Compétences (50%) : ${(s.competenceScore * 50).toFixed(1)} / 50</li>
@@ -900,11 +1024,12 @@
     }
 
     function initFixedSelectors() {
-      // Nettoyer les selects
+      // S'assurer que les données ont été chargées
+      if (!employees.length || !projects.length) return;
+
       fixedProjectSelect.innerHTML = '';
       fixedEmployeeSelect.innerHTML = '';
 
-      // Remplir les projets
       projects.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p.id;
@@ -912,20 +1037,28 @@
         fixedProjectSelect.appendChild(opt);
       });
 
-      // Remplir les employés
       employees.forEach(e => {
         const opt = document.createElement("option");
         opt.value = e.id;
-        opt.textContent = `${e.nom} (${e.metier} - ${e.id} | Dispo: ${e.disponibilite})`;
+        opt.textContent = `${e.nom} (${e.metier || 'N/A'} - ${e.id} | Dispo: ${e.disponibilite || 'N/A'})`;
         fixedEmployeeSelect.appendChild(opt);
       });
     }
 
-    // Bouton "Planifier" (maintenant pour Générer une nouvelle version)
+    // ===========================================
+    // ÉVÉNEMENTS
+    // ===========================================
+    
+    // Événements de planification
     planAllBtn.addEventListener("click", () => {
       const result = planAllProjectsGlobally();
-      renderAssignments(result);
+      if (result) renderAssignments(result);
     });
+
+    // Événements de gestion des données
+    loadDataBtn.addEventListener("click", loadDataFromUI);
+    saveDataBtn.addEventListener("click", saveDataToLocalStorage);
+    resetDataBtn.addEventListener("click", resetDataToDefault);
 
     // Ajouter une directive fixe
     addFixedBtn.addEventListener("click", () => {
@@ -937,7 +1070,6 @@
         d => d.projectId === projectId && d.empId === empId
       );
       if (!exists) {
-        // Le status sera mis à jour au prochain clic sur "Planifier"
         fixedAssignments.push({ projectId, empId, status: 'pending', reason: null }); 
         renderFixedList();
       }
@@ -947,13 +1079,11 @@
     clearFixedBtn.addEventListener("click", () => {
       fixedAssignments = [];
       renderFixedList();
+      summaryText.textContent = "Toutes les directives ont été effacées. Cliquez sur 'Générer une nouvelle planification (IA)' pour mettre à jour les affectations.";
     });
 
     // Initialisation au chargement
-    document.getElementById("databaseSummary").textContent = `Base de données : ${employees.length} employés / ${projects.length} projets.`;
-    renderProjectsList();
-    initFixedSelectors();
-    renderFixedList();
+    document.addEventListener('DOMContentLoaded', initializeData);
   </script>
 </body>
 </html>
