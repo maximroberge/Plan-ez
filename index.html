@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Planif IA – Gestion et Affectation (HAUT VOLUME)</title>
+  <title>Planif IA – Gestion des Projets et Affectation (v5.0)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Styles CSS */
+    /* Styles CSS (mise à jour pour la nouvelle colonne et le formulaire) */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -14,25 +14,13 @@
       padding: 24px;
     }
     .app {
-      max-width: 1600px; /* Élargissement pour 3 colonnes */
+      max-width: 1600px;
       margin: 0 auto;
     }
-    header {
-      margin-bottom: 24px;
-    }
-    header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 6px;
-    }
-    header p {
-      font-size: 0.95rem;
-      color: #9ca3af;
-    }
-    .tagline {
-      font-size: 0.8rem;
-      color: #64748b;
-      margin-top: 4px;
-    }
+    header { margin-bottom: 24px; }
+    header h1 { font-size: 1.8rem; margin-bottom: 6px; }
+    header p { font-size: 0.95rem; color: #9ca3af; }
+    .tagline { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1.8fr; /* 3 colonnes */
@@ -47,21 +35,10 @@
       box-shadow: 0 18px 40px rgba(0,0,0,0.5);
       min-height: 400px;
     }
-    .card h2 {
-      font-size: 1.15rem;
-      margin-bottom: 8px;
-    }
-    .card small {
-      color: #6b7280;
-      font-size: 0.75rem;
-    }
-    label {
-      display: block;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      color: #9ca3af;
-    }
-    select, input, textarea {
+    .card h2 { font-size: 1.15rem; margin-bottom: 8px; }
+    .card small { color: #6b7280; font-size: 0.75rem; }
+    label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #9ca3af; }
+    select, input:not([type="checkbox"]), textarea {
       width: 100%;
       padding: 6px 8px;
       margin-bottom: 8px;
@@ -72,10 +49,9 @@
       font-size: 0.85rem;
       resize: vertical;
     }
-    select:focus, input:focus, textarea:focus {
-      outline: 2px solid #38bdf8;
-      border-color: #38bdf8;
-    }
+    input[type="date"] { padding: 5px 8px; }
+
+    select:focus, input:focus, textarea:focus { outline: 2px solid #38bdf8; border-color: #38bdf8; }
     button {
       border: none;
       border-radius: 999px;
@@ -88,244 +64,69 @@
       margin-top: 6px;
       transition: all 0.2s;
     }
-    button:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(56, 189, 248, 0.3);
-    }
+    button:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(56, 189, 248, 0.3); }
     .btn-secondary {
       background: #111827;
       border: 1px solid #374151;
       margin-left: 6px;
       color: #e5e7eb;
     }
-    .btn-secondary:hover {
-      box-shadow: none;
-      border-color: #4b5563;
-      transform: translateY(0);
-    }
-    .projects-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 0.8rem;
+    .btn-secondary:hover { box-shadow: none; border-color: #4b5563; transform: translateY(0); }
+    
+    /* Colonnes de listes */
+    .projects-list, .fixed-list {
       max-height: 250px;
       overflow-y: auto;
       padding-right: 10px;
     }
-    .projects-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .projects-list::-webkit-scrollbar-thumb {
-        background: #374151;
-        border-radius: 3px;
-    }
-    .project-line {
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
-      background: #020617;
-    }
-    .project-line strong { display: block; font-size: 0.9rem; }
-    .project-meta { margin-top: 2px; color: #9ca3af; }
-    .project-meta span { margin-right: 8px; }
+    .projects-list::-webkit-scrollbar, .fixed-list::-webkit-scrollbar { width: 6px; }
+    .projects-list::-webkit-scrollbar-thumb, .fixed-list::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
 
-    /* Styles pour la gestion des données */
-    .data-management h2 { margin-bottom: 12px; }
-    .data-area { margin-bottom: 16px; }
-    .data-area label {
+    /* Project Management List */
+    .project-management-list {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+        font-size: 0.8rem;
+    }
+    .project-management-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 6px 10px;
+        background: #0f172a;
+        border-radius: 8px;
+        border: 1px solid #1e293b;
     }
-    .data-area textarea {
-        height: 300px;
-        font-family: monospace;
+    .project-management-item-details {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+    .project-management-item strong {
+        font-size: 0.9rem;
+        display: block;
+    }
+    .project-management-item small {
+        color: #9ca3af;
+    }
+    .project-management-actions button {
+        margin: 0 0 0 4px;
+        padding: 4px 8px;
         font-size: 0.75rem;
     }
-    .data-status {
-        margin-top: 8px;
-        padding: 8px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-    }
+    
+    /* Autres styles inchangés */
+    .data-status { margin-top: 8px; padding: 8px; border-radius: 6px; font-size: 0.8rem; }
     .data-status.success { background: #166534; color: #dcfce7; }
     .data-status.error { background: #991b1b; color: #fee2e2; }
     .data-controls { margin-top: 10px; }
     .data-controls button { margin-top: 0; }
-    
-    /* Styles de résultat (inchangés) */
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .result-header small {
-      display: block;
-      color: #9ca3af;
-      font-size: 0.8rem;
-    }
-    .project-block {
-      border-top: 1px solid #1f2937;
-      padding-top: 10px;
-      margin-top: 10px;
-    }
-    .project-block:first-of-type {
-      border-top: none;
-      padding-top: 0;
-      margin-top: 0;
-    }
-    .project-block-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 4px;
-      gap: 8px;
-    }
-    .project-block-title h3 {
-      font-size: 0.95rem;
-    }
-    .project-block-title span {
-      font-size: 0.75rem;
-      color: #9ca3af;
-    }
-    .assignment-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .assignment-card {
-      background: #0f172a;
-      border-radius: 12px;
-      padding: 10px;
-      border: 1px solid #1e293b;
-      font-size: 0.8rem;
-    }
-    .fixed-assignment {
-      border: 1px solid #fde047;
-      background: #422006;
-    }
-    .assignment-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-      align-items: center;
-    }
-    .assignment-top span.name {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 4px;
-      color: #9ca3af;
-    }
-    .pill-row span {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid #374151;
-      font-size: 0.75rem;
-    }
-    .assignment-detail {
-      color: #94a3b8;
-      line-height: 1.4;
-    }
-    .no-assign {
-      font-size: 0.8rem;
-      color: #f97373;
-      margin-bottom: 4px;
-      padding: 8px 10px;
-      border: 1px dashed #f97373;
-      border-radius: 8px;
-    }
-    .fixed-list {
-      margin-top: 8px;
-      font-size: 0.78rem;
-      color: #9ca3af;
-      max-height: 250px;
-      overflow-y: auto;
-      padding-right: 10px;
-    }
-    .fixed-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .fixed-list::-webkit-scrollbar-thumb {
-        background: #374151;
-        border-radius: 3px;
-    }
-    .fixed-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
-      border-bottom: 1px dashed #1f2937;
-    }
-    .fixed-item:last-child {
-      border-bottom: none;
-    }
-    .fixed-item span {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
-    .fixed-item-error {
-      color: #f97373;
-      font-size: 0.75rem;
-      margin-top: 2px;
-      margin-bottom: 4px;
-    }
-    .fixed-item-solution {
-      font-size: 0.75rem;
-      color: #38bdf8;
-      background: #0c4a6e30;
-      border: 1px solid #0c4a6e;
-      padding: 4px 6px;
-      border-radius: 6px;
-      margin-top: 4px;
-    }
-    .fixed-item-success {
-      color: #34d399;
-    }
-    .fixed-item-content { flex-grow: 1; }
-    .delete-fixed-btn { 
-        background: #ef4444; 
-        color: white; 
-        border: none; 
-        border-radius: 50%; 
-        width: 18px; 
-        height: 18px; 
-        font-size: 10px; 
-        padding: 0; 
-        line-height: 1; 
-        margin-left: 10px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        flex-shrink: 0;
-    }
-    .delete-fixed-btn:hover { background: #dc2626; }
-    .score-bar-container {
-      background: #1e293b;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 4px;
-      height: 8px;
-    }
-    .score-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #38bdf8, #16a34a);
-      width: 0%;
-      transition: width 0.3s ease-out;
-    }
-    .score-label {
-      font-size: 0.7rem;
-      color: #e5e7eb;
-      font-weight: 700;
-    }
-    
+    .data-area textarea { height: 200px; font-family: monospace; font-size: 0.75rem; }
+
     @media (max-width: 1400px) {
       .grid { grid-template-columns: 1fr 1fr; }
       .grid > section:last-child { grid-column: 1 / span 2; }
@@ -339,9 +140,9 @@
 <body>
   <div class="app">
     <header>
-      <h1>Planificateur IA – Affectation globale (v4.0)</h1>
+      <h1>Planificateur IA – Affectation globale (v5.0)</h1>
       <p>
-        **Mode Gestion des Données Actif.** Modifiez les données JSON ci-dessous et cliquez sur "Générer" pour tester vos scénarios.
+        **Mode Gestion des Projets par Formulaire Actif.** Modifiez, ajoutez ou supprimez des projets via l'interface ci-dessous.
       </p>
       <div class="tagline">
         Priorité : **Disponibilité** > Compétences > Évaluation > Distance.
@@ -357,17 +158,16 @@
           <button id="planAllBtn">Générer une nouvelle planification (IA)</button>
         </div>
         <small style="display:block;margin-top:2px;color:#6b7280;font-size:0.75rem;">
-          L'IA utilisera les données des zones de texte JSON.
+          L'IA utilisera les données chargées.
         </small>
 
         <div style="margin-top:16px; border-top:1px solid #1f2937; padding-top:12px;">
           <h3 style="font-size:0.95rem;margin-bottom:4px;">Directive fixe (Manuelle)</h3>
-          <small>Attribuer un employé à un projet.</small>
 
           <label style="margin-top:8px;">Projet</label>
           <select id="fixedProjectSelect"></select>
 
-          <label>Employé</select>
+          <label>Employé</label>
           <select id="fixedEmployeeSelect"></select>
 
           <button id="addFixedBtn">Ajouter la directive</button>
@@ -377,7 +177,7 @@
             Aucune directive pour l’instant.
           </div>
         </div>
-
+        
         <div style="margin-top:24px; border-top:1px solid #1f2937; padding-top:12px;">
             <h3 style="font-size:0.95rem;">Projets chargés (Aperçu)</h3>
         </div>
@@ -385,24 +185,68 @@
       </section>
 
       <section class="card data-management">
-        <h2>2. Gestion des Données (JSON)</h2>
-        <small id="dataLoadStatusText" style="margin-bottom:10px;">Chargement par défaut effectué.</small>
-
+        <h2>2. Gestion de la Base de Données</h2>
+        
         <div class="data-controls">
-            <button id="loadDataBtn">Charger les données & Mettre à jour la base</button>
+            <button id="loadDataBtn">Mettre à jour la base de données</button>
             <button id="saveDataBtn" class="btn-secondary">Sauvegarder (Localement)</button>
             <button id="resetDataBtn" class="btn-secondary">Réinitialiser (Données par défaut)</button>
         </div>
-        <div id="dataStatus" class="data-status"></div>
+        <div id="dataStatus" class="data-status">Prêt.</div>
+        
+        <div style="margin-top:16px; border-top:1px solid #1f2937; padding-top:12px;">
+            <h3 style="font-size:1rem; margin-bottom:10px;">Gestion des Projets (Formulaire)</h3>
+            
+            <label for="projectIdInput">ID Projet (P-XXX) <small style="color:#fde047; margin-left:10px;" id="currentProjectEditStatus">Nouveau Projet</small></label>
+            <input type="text" id="projectIdInput" placeholder="Ex: P-999" required />
 
-        <div class="data-area" style="margin-top:16px;">
-            <label for="employeesJSON">Employés (JSON Array)</label>
-            <textarea id="employeesJSON"></textarea>
+            <label for="projectNomInput">Nom du Projet</label>
+            <input type="text" id="projectNomInput" placeholder="Ex: Arrêt usine X" required />
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label for="projectMetierSelect">Métier Requis</label>
+                    <select id="projectMetierSelect">
+                        <option value="mecanicien">mecanicien</option>
+                        <option value="soudeur">soudeur</option>
+                        <option value="tuyauteur">tuyauteur</option>
+                        <option value="manoeuvre">manoeuvre</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="projectSlotsInput">Nombre de Postes (Slots)</label>
+                    <input type="number" id="projectSlotsInput" min="1" max="10" value="3" required />
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label for="projectDebutInput">Date de Début</label>
+                    <input type="date" id="projectDebutInput" required />
+                </div>
+                <div>
+                    <label for="projectFinInput">Date de Fin</label>
+                    <input type="date" id="projectFinInput" required />
+                </div>
+            </div>
+
+            <label for="projectCompetencesInput">Compétences Requises (séparées par une virgule)</label>
+            <input type="text" id="projectCompetencesInput" placeholder="Ex: MIG, Lecture plan, ASP" required />
+
+            <div style="display:flex; justify-content: flex-end; margin-top: 5px;">
+                <button id="saveProjectBtn">Ajouter / Mettre à jour le projet</button>
+                <button id="cancelEditBtn" class="btn-secondary" style="display:none;">Annuler l'édition</button>
+            </div>
         </div>
 
-        <div class="data-area">
-            <label for="projectsJSON">Projets (JSON Array)</label>
-            <textarea id="projectsJSON"></textarea>
+        <div style="margin-top:20px; border-top:1px solid #1f2937; padding-top:12px;">
+            <h3 style="font-size:1rem;">Projets Actuellement dans la Base</h3>
+            <div class="project-management-list" id="projectManagementList"></div>
+        </div>
+        
+        <div class="data-area" style="margin-top:20px; border-top:1px solid #1f2937; padding-top:12px;">
+            <label for="employeesJSON">Employés (JSON Array - Volume élevé : ${initialEmployees.length} employés) <small style="color:#fde047;">Modifier ici la 'disponibilite' ou l'évaluation.</small></label>
+            <textarea id="employeesJSON"></textarea>
         </div>
       </section>
 
@@ -421,7 +265,7 @@
   <script>
     
     // ==========================================================
-    // GÉNÉRATION DE DONNÉES PAR DÉFAUT (150 Employés / 25 Projets)
+    // GÉNÉRATION DE DONNÉES PAR DÉFAUT
     // ==========================================================
 
     const allSkills = {
@@ -458,8 +302,8 @@
             uniqueNames.add(nom);
 
             const id = `${prefix}-${String(i).padStart(3, '0')}`;
-            const evaluation = parseFloat((Math.random() * (5.0 - 3.5) + 3.5).toFixed(1)); // 3.5 à 5.0
-            const distanceKm = Math.floor(Math.random() * 45) + 5; // 5 à 49 km
+            const evaluation = parseFloat((Math.random() * (5.0 - 3.5) + 3.5).toFixed(1)); 
+            const distanceKm = Math.floor(Math.random() * 45) + 5; 
             const competenceRange = metier === 'manoeuvre' ? { min: 2, max: 4 } : { min: 3, max: 5 };
 
             employees.push({
@@ -475,19 +319,14 @@
         return employees;
     }
 
-    // Données par défaut (initiales)
     const initialEmployees = [
       ...generateEmployees('mecanicien', 40, 'M'),
       ...generateEmployees('soudeur', 40, 'S'),
       ...generateEmployees('tuyauteur', 35, 'T'),
       ...generateEmployees('manoeuvre', 35, 'N')
     ];
-    
-    // Trier les employés par nom pour le <select> des directives
     initialEmployees.sort((a, b) => a.nom.localeCompare(b.nom));
 
-
-    // 25 PROJETS (DONNÉES INCHANGÉES)
     const initialProjects = [
       { id:"P-101", nom:"Arrêt chaudière – Bécancour", metier:"soudeur", competencesRequises:["MIG","Espaces clos","ASP"], debut:"2026-01-10", fin:"2026-01-18", slots:4 },
       { id:"P-102", nom:"Remplacement convoyeur – Trois-Rivières", metier:"mecanicien", competencesRequises:["Maintenance préventive","Alignement","Hydraulique"], debut:"2026-01-12", fin:"2026-01-25", slots:5 },
@@ -516,57 +355,88 @@
       { id:"P-125", nom:"Réparation Structure – Trois-Rivières", metier:"soudeur", competencesRequises:["MIG","Lecture plan"], debut:"2026-04-22", fin:"2026-04-30", slots:3 },
     ];
     
-    // Variables globales qui seront mises à jour par l'UI
+    // Variables globales
     let employees = [];
     let projects = [];
     let fixedAssignments = [];
+    let isEditingProject = false; 
 
     // ===========================================
-    // LOGIQUE DE GESTION DES DONNÉES (JSON / Local Storage)
+    // SÉLECTEURS D'ÉLÉMENTS UI
     // ===========================================
-
-    const employeesJSONArea = document.getElementById("employeesJSON");
-    const projectsJSONArea = document.getElementById("projectsJSON");
+    const projectsListEl = document.getElementById("projectsList");
+    const assignmentsContainer = document.getElementById("assignmentsContainer");
+    const summaryText = document.getElementById("summaryText");
+    const planAllBtn = document.getElementById("planAllBtn");
+    const loadDataBtn = document.getElementById("loadDataBtn");
+    const saveDataBtn = document.getElementById("saveDataBtn");
+    const resetDataBtn = document.getElementById("resetDataBtn");
     const dataStatus = document.getElementById("dataStatus");
     const databaseSummary = document.getElementById("databaseSummary");
-    
+    const employeesJSONArea = document.getElementById("employeesJSON");
+    const fixedProjectSelect = document.getElementById("fixedProjectSelect");
+    const fixedEmployeeSelect = document.getElementById("fixedEmployeeSelect");
+    const fixedList = document.getElementById("fixedList");
+
+    // Sélecteurs de formulaire Projet
+    const projectIdInput = document.getElementById('projectIdInput');
+    const projectNomInput = document.getElementById('projectNomInput');
+    const projectMetierSelect = document.getElementById('projectMetierSelect');
+    const projectDebutInput = document.getElementById('projectDebutInput');
+    const projectFinInput = document.getElementById('projectFinInput');
+    const projectSlotsInput = document.getElementById('projectSlotsInput');
+    const projectCompetencesInput = document.getElementById('projectCompetencesInput');
+    const saveProjectBtn = document.getElementById('saveProjectBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const projectManagementList = document.getElementById('projectManagementList');
+    const currentProjectEditStatus = document.getElementById('currentProjectEditStatus');
+
+
+    // ===========================================
+    // LOGIQUE DE GESTION DES DONNÉES
+    // ===========================================
+
     function setStatus(message, isError = false) {
         dataStatus.textContent = message;
         dataStatus.className = "data-status " + (isError ? "error" : "success");
     }
 
-    function loadDataFromUI() {
+    // --- Gestion des Employés (JSON) ---
+    function loadEmployeesFromUI() {
         try {
-            // 1. Charger et parser les employés
             const loadedEmployees = JSON.parse(employeesJSONArea.value);
             if (!Array.isArray(loadedEmployees) || loadedEmployees.length === 0) {
                 throw new Error("La liste des employés est vide ou n'est pas un tableau valide.");
             }
             employees = loadedEmployees.sort((a, b) => a.nom.localeCompare(b.nom));
-
-            // 2. Charger et parser les projets
-            const loadedProjects = JSON.parse(projectsJSONArea.value);
-            if (!Array.isArray(loadedProjects) || loadedProjects.length === 0) {
-                throw new Error("La liste des projets est vide ou n'est pas un tableau valide.");
-            }
-            projects = loadedProjects;
-
-            // 3. Mettre à jour l'UI de Planification
-            renderProjectsList();
-            initFixedSelectors();
-            databaseSummary.textContent = `Base de données : ${employees.length} employés / ${projects.length} projets.`;
-            setStatus("Données chargées avec succès. Prêt pour la planification.");
-            
             return true;
         } catch (e) {
-            setStatus("Erreur JSON : " + e.message, true);
+            setStatus("Erreur JSON des employés : " + e.message, true);
             return false;
         }
     }
 
+    // --- Gestion Globale ---
+    function loadDataFromUI(showStatus = true) {
+        if (!loadEmployeesFromUI()) return false;
+        
+        // Projects array is already managed by the form/list functions
+
+        // Mettre à jour l'UI de Planification
+        renderProjectsList();
+        renderProjectManagementList();
+        initFixedSelectors();
+        
+        databaseSummary.textContent = `Base de données : ${employees.length} employés / ${projects.length} projets.`;
+        if (showStatus) {
+            setStatus("Données chargées avec succès. Prêt pour la planification.");
+        }
+        return true;
+    }
+
     function displayCurrentData(empData, projData) {
         employeesJSONArea.value = JSON.stringify(empData, null, 2);
-        projectsJSONArea.value = JSON.stringify(projData, null, 2);
+        projects = projData; // Affectation directe du tableau projects
     }
 
     function initializeData() {
@@ -576,25 +446,27 @@
         if (storedEmployees && storedProjects) {
             try {
                 displayCurrentData(JSON.parse(storedEmployees), JSON.parse(storedProjects));
-                loadDataFromUI();
-                document.getElementById("dataLoadStatusText").textContent = "Données chargées depuis la sauvegarde locale.";
+                loadDataFromUI(false);
             } catch (e) {
                 // En cas d'erreur de parsing du local storage, charger les données par défaut
                 displayCurrentData(initialEmployees, initialProjects);
-                loadDataFromUI();
-                document.getElementById("dataLoadStatusText").textContent = "Sauvegarde locale corrompue. Chargement des données par défaut.";
+                loadDataFromUI(false);
+                setStatus("Sauvegarde locale corrompue. Chargement des données par défaut.");
             }
         } else {
             // Pas de sauvegarde locale, charger les données par défaut
             displayCurrentData(initialEmployees, initialProjects);
-            loadDataFromUI();
-            document.getElementById("dataLoadStatusText").textContent = "Chargement des données par défaut.";
+            loadDataFromUI(false);
         }
+        
+        resetProjectForm(); // Initialiser le formulaire à un état "Nouveau Projet"
     }
 
     function saveDataToLocalStorage() {
+        // Sauvegarder les employés depuis le JSON Area
         localStorage.setItem('planif_employees', employeesJSONArea.value);
-        localStorage.setItem('planif_projects', projectsJSONArea.value);
+        // Sauvegarder les projets depuis le tableau JS
+        localStorage.setItem('planif_projects', JSON.stringify(projects, null, 2));
         setStatus("Données sauvegardées dans le stockage local du navigateur.", false);
     }
     
@@ -607,16 +479,151 @@
         renderFixedList();
         setStatus("Données réinitialisées aux valeurs par défaut.", false);
     }
+    
+    // ===========================================
+    // LOGIQUE DE GESTION DES PROJETS PAR FORMULAIRE
+    // ===========================================
+    
+    function resetProjectForm() {
+        isEditingProject = false;
+        projectIdInput.value = 'P-' + String(projects.length + 1).padStart(3, '0');
+        projectNomInput.value = '';
+        projectMetierSelect.value = 'mecanicien';
+        projectDebutInput.value = new Date().toISOString().substring(0, 10);
+        projectFinInput.value = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10);
+        projectSlotsInput.value = 3;
+        projectCompetencesInput.value = '';
+        currentProjectEditStatus.textContent = 'Nouveau Projet';
+        saveProjectBtn.textContent = 'Ajouter le nouveau projet';
+        cancelEditBtn.style.display = 'none';
+        projectIdInput.disabled = false;
+    }
+    
+    function editProject(projectId) {
+        const project = projects.find(p => p.id === projectId);
+        if (!project) return;
+        
+        isEditingProject = true;
+        projectIdInput.value = project.id;
+        projectIdInput.disabled = true; 
+        projectNomInput.value = project.nom;
+        projectMetierSelect.value = project.metier;
+        projectDebutInput.value = project.debut;
+        projectFinInput.value = project.fin;
+        projectSlotsInput.value = project.slots;
+        projectCompetencesInput.value = project.competencesRequises.join(', ');
+        
+        currentProjectEditStatus.textContent = `Édition de ${project.id}`;
+        saveProjectBtn.textContent = 'Mettre à jour le projet';
+        cancelEditBtn.style.display = 'inline-block';
+        
+        // Scroll to the top of the form for better UX
+        document.getElementById('projectIdInput').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function saveProject() {
+        const id = projectIdInput.value.trim();
+        const nom = projectNomInput.value.trim();
+        const metier = projectMetierSelect.value;
+        const debut = projectDebutInput.value;
+        const fin = projectFinInput.value;
+        const slots = parseInt(projectSlotsInput.value, 10);
+        const competencesRequises = projectCompetencesInput.value.split(',').map(c => c.trim()).filter(c => c.length > 0);
+        
+        if (!id || !nom || !debut || !fin || isNaN(slots) || slots < 1) {
+            setStatus("Veuillez remplir tous les champs du projet (ID, Nom, Dates, Slots > 0).", true);
+            return;
+        }
 
+        const newProject = {
+            id,
+            nom,
+            metier,
+            competencesRequises,
+            debut,
+            fin,
+            slots
+        };
+
+        if (isEditingProject) {
+            // Update
+            const index = projects.findIndex(p => p.id === id);
+            if (index !== -1) {
+                projects[index] = newProject;
+                setStatus(`Projet ${id} mis à jour avec succès.`, false);
+            } else {
+                setStatus(`Erreur: Projet ${id} introuvable pour la mise à jour.`, true);
+            }
+        } else {
+            // Add new
+            if (projects.some(p => p.id === id)) {
+                 setStatus(`Erreur: Un projet avec l'ID ${id} existe déjà.`, true);
+                 return;
+            }
+            projects.push(newProject);
+            setStatus(`Nouveau projet ${id} ajouté.`, false);
+        }
+        
+        resetProjectForm();
+        loadDataFromUI(false); // Reload all UI lists and selectors
+    }
+    
+    function deleteProject(projectId) {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer le projet ${projectId}?`)) {
+            projects = projects.filter(p => p.id !== projectId);
+            
+            // Remove directives related to this project
+            fixedAssignments = fixedAssignments.filter(d => d.projectId !== projectId);
+            
+            setStatus(`Projet ${projectId} supprimé.`, false);
+            loadDataFromUI(false);
+            renderFixedList();
+            
+            if(isEditingProject && projectIdInput.value === projectId) {
+                resetProjectForm();
+            }
+        }
+    }
+    
+    function renderProjectManagementList() {
+        projectManagementList.innerHTML = '';
+        if (projects.length === 0) {
+            projectManagementList.innerHTML = '<p style="color:#9ca3af; font-style:italic;">Aucun projet dans la base de données.</p>';
+            return;
+        }
+        
+        const sorted = [...projects].sort((a, b) => a.id.localeCompare(b.id));
+
+        sorted.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'project-management-item';
+            div.innerHTML = `
+                <div class="project-management-item-details">
+                    <strong>${p.id} – ${p.nom}</strong>
+                    <small>${p.metier} | ${p.slots} postes | ${p.debut} → ${p.fin}</small>
+                </div>
+                <div class="project-management-actions">
+                    <button class="edit-project-btn btn-secondary" data-id="${p.id}">Éditer</button>
+                    <button class="delete-project-btn" data-id="${p.id}">Supprimer</button>
+                </div>
+            `;
+            projectManagementList.appendChild(div);
+        });
+        
+        // Add event listeners
+        projectManagementList.querySelectorAll('.edit-project-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => editProject(e.target.dataset.id));
+        });
+        projectManagementList.querySelectorAll('.delete-project-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => deleteProject(e.target.dataset.id));
+        });
+    }
 
     // ===========================================
     // LOGIQUE DE PLANIFICATION (INCHANGÉE)
     // ===========================================
 
-    function parseDate(str) {
-      return new Date(str + "T00:00:00");
-    }
-
+    function parseDate(str) { return new Date(str + "T00:00:00"); }
     function projectsOverlap(p1, p2) {
       const s1 = parseDate(p1.debut);
       const e1 = parseDate(p1.fin);
@@ -625,7 +632,6 @@
       if (e1 < s2 || e2 < s1) return false;
       return true;
     }
-
     function shuffleArray(arr) {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -634,7 +640,6 @@
       }
       return a;
     }
-
     function removeFixedAssignment(index) {
       if (index >= 0 && index < fixedAssignments.length) {
         fixedAssignments.splice(index, 1);
@@ -642,70 +647,45 @@
         summaryText.textContent = "Directive supprimée. Cliquez sur 'Générer une nouvelle planification (IA)' pour mettre à jour les affectations.";
       }
     }
-
-
     function scoreEmployeeForProject(emp, project, employeeLoad) {
-      // Filtre de Disponibilité
       if (!emp.disponibilite || !emp.disponibilite.toLowerCase().includes("disponible")) return null; 
-
       if (emp.metier !== project.metier) return null;
-
       const required = (project.competencesRequises || []).map(c => c.toLowerCase());
       const empSkills = (emp.competences || []).map(c => c.toLowerCase());
-
       const matched = required.filter(r => empSkills.includes(r)).length;
-      
-      // Filtre : doit avoir au moins 1 compétence requise
       if (matched === 0 && required.length > 0) return null; 
-      
-      // Sécurité : éviter la division par zéro si required.length est 0 (bien que les données soient structurées)
       const competenceScore = required.length > 0 ? matched / required.length : 1; 
-
       const evalScore = Math.min(Math.max(emp.evaluation || 0, 0), 5) / 5;
       const maxDistance = 50;
       const distanceScore = Math.max(0, 1 - ((emp.distanceKm || maxDistance) / maxDistance));
-
-      let baseScore =
-        0.5 * competenceScore +
-        0.3 * evalScore +
-        0.2 * distanceScore;
-
+      let baseScore = 0.5 * competenceScore + 0.3 * evalScore + 0.2 * distanceScore;
       const load = employeeLoad[emp.id] || 0;
       const loadFactor = 1 / (1 + load * 0.5);
-
       const finalScore = baseScore * loadFactor;
-
       return {
-        finalScore,
-        competenceScore,
-        evalScore,
-        distanceScore,
-        matched,
-        loadFactor
+        finalScore, competenceScore, evalScore, distanceScore, matched, loadFactor
       };
     }
 
     function planAllProjectsGlobally() {
-      // Tenter de recharger les données avant chaque planif
       if (!loadDataFromUI()) {
-        assignmentsContainer.innerHTML = '<p style="color:#f97373;">Erreur de chargement des données. Veuillez corriger le JSON dans la colonne 2.</p>';
+        assignmentsContainer.innerHTML = '<p style="color:#f97373;">Erreur de chargement des données. Veuillez corriger le JSON des employés ou vérifier la liste des projets.</p>';
+        return;
+      }
+      if (projects.length === 0) {
+        assignmentsContainer.innerHTML = '<p style="color:#f97373;">Veuillez ajouter des projets avant de lancer la planification.</p>';
         return;
       }
 
       assignmentsContainer.innerHTML = '<p style="color:#38bdf8;">Planification en cours...</p>';
       
-      const sortedProjects = [...projects].sort(
-        (a, b) => parseDate(a.debut) - parseDate(b.debut)
-      );
+      const sortedProjects = [...projects].sort((a, b) => parseDate(a.debut) - parseDate(b.debut));
 
       const assignments = {};
       const employeeAssignments = {};
       const employeeLoad = {};
 
-      for (const p of sortedProjects) {
-        assignments[p.id] = [];
-      }
-
+      for (const p of sortedProjects) { assignments[p.id] = []; }
       fixedAssignments = fixedAssignments.map(d => ({ ...d, status: 'pending', reason: null, conflitProjId: null }));
       
       // 1) Appliquer d'abord les directives fixes
@@ -722,10 +702,10 @@
         
         if (!emp.disponibilite || !emp.disponibilite.toLowerCase().includes("disponible")) {
             status = 'conflict_dispo';
-            reason = `Employé non disponible (${emp.disponibilite || 'Inconnu'})`;
+            reason = `Employé non disponible (${emp.disponibilite || 'N/A'})`;
         } else if (emp.metier !== proj.metier) {
             status = 'conflict_metier';
-            reason = `Métier non compatible (${emp.metier || 'Inconnu'} vs ${proj.metier || 'Inconnu'})`;
+            reason = `Métier non compatible (${emp.metier || 'N/A'} vs ${proj.metier || 'N/A'})`;
         } else if (assignments[proj.id].length >= proj.slots) {
             status = 'conflict_slots';
             reason = `Projet déjà complet (${proj.slots} slots remplis)`;
@@ -753,7 +733,6 @@
         fixedAssignments[i].employeeName = emp.nom;
         fixedAssignments[i].projectName = proj.nom;
 
-
         if (status === 'assigned') {
             const score = scoreEmployeeForProject(emp, proj, employeeLoad) || {
                 finalScore: 1.0, competenceScore: 1.0, evalScore: (emp.evaluation || 0) / 5, 
@@ -776,8 +755,7 @@
           const candidates = [];
 
           for (const emp of shuffledEmployees) {
-            const alreadyAssignedHere = (assignments[project.id] || [])
-              .some(a => a.emp.id === emp.id);
+            const alreadyAssignedHere = (assignments[project.id] || []).some(a => a.emp.id === emp.id);
             if (alreadyAssignedHere) continue;
 
             const assignedProjects = employeeAssignments[emp.id] || [];
@@ -792,22 +770,16 @@
             if (conflit) continue;
 
             const s = scoreEmployeeForProject(emp, project, employeeLoad);
-            if (s) {
-              candidates.push({ emp, s, isFixed: false });
-            }
+            if (s) { candidates.push({ emp, s, isFixed: false }); }
           }
 
-          if (candidates.length === 0) {
-            continue;
-          }
+          if (candidates.length === 0) continue;
 
           candidates.sort((a, b) => b.s.finalScore - a.s.finalScore);
           const chosen = candidates[0];
 
           assignments[project.id].push(chosen);
-          if (!employeeAssignments[chosen.emp.id]) {
-            employeeAssignments[chosen.emp.id] = [];
-          }
+          if (!employeeAssignments[chosen.emp.id]) employeeAssignments[chosen.emp.id] = [];
           employeeAssignments[chosen.emp.id].push(project.id);
           employeeLoad[chosen.emp.id] = (employeeLoad[chosen.emp.id] || 0) + 1;
         }
@@ -817,27 +789,12 @@
     }
 
     // ===========================================
-    // RENDU UI (MODIFIÉ POUR LES NOUVELLES COLONNES/COMMANDES)
+    // RENDU UI
     // ===========================================
-    const projectsListEl = document.getElementById("projectsList");
-    const assignmentsContainer = document.getElementById("assignmentsContainer");
-    const summaryText = document.getElementById("summaryText");
-    const planAllBtn = document.getElementById("planAllBtn");
-    const loadDataBtn = document.getElementById("loadDataBtn");
-    const saveDataBtn = document.getElementById("saveDataBtn");
-    const resetDataBtn = document.getElementById("resetDataBtn");
-
-    const fixedProjectSelect = document.getElementById("fixedProjectSelect");
-    const fixedEmployeeSelect = document.getElementById("fixedEmployeeSelect");
-    const addFixedBtn = document.getElementById("addFixedBtn");
-    const clearFixedBtn = document.getElementById("clearFixedBtn");
-    const fixedList = document.getElementById("fixedList");
-
+    
     function renderProjectsList() {
       projectsListEl.innerHTML = "";
-      const sorted = [...projects].sort(
-        (a, b) => parseDate(a.debut) - parseDate(b.debut)
-      );
+      const sorted = [...projects].sort((a, b) => parseDate(a.debut) - parseDate(b.debut));
       for (const p of sorted) {
         const div = document.createElement("div");
         div.className = "project-line";
@@ -888,7 +845,7 @@
                 break;
             case 'conflict_slots':
                 statusText = `– CONFLIT : Projet déjà complet (${proj.slots} slots).`;
-                solutionText = `**Action :** Désaffecter un employé IA pour faire de la place ou augmenter les slots du projet.`;
+                solutionText = `**Action :** Désaffecter un employé IA pour faire de la place ou augmenter les slots du projet (dans Formulaire Projet).`;
                 statusClass = 'fixed-item-error';
                 break;
             case 'conflict_overlap':
@@ -928,10 +885,7 @@
       const { assignments, employeeAssignments, employeeLoad } = result;
 
       let totalSlots = projects.reduce((sum, p) => sum + (p.slots || 0), 0);
-      let totalAssigned = Object.values(assignments).reduce(
-        (sum, arr) => sum + arr.length,
-        0
-      );
+      let totalAssigned = Object.values(assignments).reduce((sum, arr) => sum + arr.length, 0);
 
       summaryText.textContent =
         `Postes remplis : ${totalAssigned}/${totalSlots} • ` +
@@ -939,9 +893,7 @@
 
       assignmentsContainer.innerHTML = "";
 
-      const sorted = [...projects].sort(
-        (a, b) => parseDate(a.debut) - parseDate(b.debut)
-      );
+      const sorted = [...projects].sort((a, b) => parseDate(a.debut) - parseDate(b.debut));
 
       for (const p of sorted) {
         const block = document.createElement("div");
@@ -1024,8 +976,11 @@
     }
 
     function initFixedSelectors() {
-      // S'assurer que les données ont été chargées
-      if (!employees.length || !projects.length) return;
+      if (!employees.length || !projects.length) {
+        fixedProjectSelect.innerHTML = '<option>Aucune donnée chargée</option>';
+        fixedEmployeeSelect.innerHTML = '<option>Aucune donnée chargée</option>';
+        return;
+      }
 
       fixedProjectSelect.innerHTML = '';
       fixedEmployeeSelect.innerHTML = '';
@@ -1059,9 +1014,16 @@
     loadDataBtn.addEventListener("click", loadDataFromUI);
     saveDataBtn.addEventListener("click", saveDataToLocalStorage);
     resetDataBtn.addEventListener("click", resetDataToDefault);
+    
+    // Événements de gestion de projet (Formulaire)
+    saveProjectBtn.addEventListener('click', saveProject);
+    cancelEditBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetProjectForm();
+    });
 
     // Ajouter une directive fixe
-    addFixedBtn.addEventListener("click", () => {
+    document.getElementById("addFixedBtn").addEventListener("click", () => {
       const projectId = fixedProjectSelect.value;
       const empId = fixedEmployeeSelect.value;
       if (!projectId || !empId) return;
@@ -1076,7 +1038,7 @@
     });
 
     // Effacer toutes les directives
-    clearFixedBtn.addEventListener("click", () => {
+    document.getElementById("clearFixedBtn").addEventListener("click", () => {
       fixedAssignments = [];
       renderFixedList();
       summaryText.textContent = "Toutes les directives ont été effacées. Cliquez sur 'Générer une nouvelle planification (IA)' pour mettre à jour les affectations.";
