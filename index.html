@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Planif IA – Affectation globale (HAUT VOLUME FIXE)</title>
+  <title>Planif IA – Affectation globale (HAUT VOLUME)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     /* Styles CSS inchangés pour une meilleure présentation */
@@ -274,7 +274,7 @@
 <body>
   <div class="app">
     <header>
-      <h1>Planificateur IA – Affectation globale (v3)</h1>
+      <h1>Planificateur IA – Affectation globale (v3.1)</h1>
       <p>
         Répartition globale des employés sur l’ensemble des projets, en respectant :
         <strong>Compétences > Évaluation > Distance</strong>.
@@ -295,11 +295,10 @@
         </div>
 
         <div style="margin-top:10px; margin-bottom:4px;">
-          <button id="planAllBtn">Planifier tous les projets (IA)</button>
-          <button id="shuffleBtn" class="btn-secondary">Rebrasser la planif</button>
+          <button id="planAllBtn">Générer une nouvelle planification (IA)</button>
         </div>
         <small style="display:block;margin-top:2px;color:#6b7280;font-size:0.75rem;">
-          Le rebrassage permet de tester des options différentes pour les scores proches.
+          Chaque clic génère une nouvelle version aléatoire.
         </small>
 
         <div style="margin-top:16px; border-top:1px solid #1f2937; padding-top:12px;">
@@ -330,7 +329,7 @@
         <div class="result-header">
           <div>
             <h2>2. Résultat de la planification</h2>
-            <small id="summaryText">Clique sur “Planifier tous les projets (IA)” pour commencer.</small>
+            <small id="summaryText">Clique sur “Générer une nouvelle planification (IA)” pour commencer.</small>
           </div>
         </div>
         <div id="assignmentsContainer"></div>
@@ -446,7 +445,7 @@
 
 
     // =========================
-    // Helpers, Logique et UI (inchangés)
+    // Helpers, Logique et UI
     // =========================
     function parseDate(str) {
       return new Date(str + "T00:00:00");
@@ -461,6 +460,7 @@
       return true;
     }
 
+    // Fonction de brassage (utile pour l'aléatoire lors de l'attribution)
     function shuffleArray(arr) {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -512,6 +512,7 @@
       // Afficher un message de chargement pour les grands ensembles de données
       assignmentsContainer.innerHTML = '<p style="color:#38bdf8;">Planification en cours... Cela peut prendre un instant avec un volume de données élevé.</p>';
       
+      // Trier les projets par date de début
       const sortedProjects = [...projects].sort(
         (a, b) => parseDate(a.debut) - parseDate(b.debut)
       );
@@ -524,6 +525,7 @@
         assignments[p.id] = [];
       }
 
+      // Réinitialiser les statuts des directives
       fixedAssignments = fixedAssignments.map(d => ({ ...d, status: 'pending', reason: null }));
       
       // 1) Appliquer d'abord les directives fixes
@@ -584,7 +586,7 @@
 
       // 2) Compléter les slots restants avec IA + shuffle
       for (const project of sortedProjects) {
-        // Le shuffle est la clé pour le bouton "rebrasser"
+        // Le shuffle est la clé pour le rebrassage : l'ordre des candidats change à chaque exécution
         const shuffledEmployees = shuffleArray(employees);
 
         for (let slot = assignments[project.id].length; slot < project.slots; slot++) {
@@ -616,6 +618,7 @@
             continue;
           }
 
+          // Le meilleur candidat est choisi
           candidates.sort((a, b) => b.s.finalScore - a.s.finalScore);
           const chosen = candidates[0];
 
@@ -632,13 +635,12 @@
     }
 
     // =========================
-    // UI (inchangé)
+    // UI Éléments et Rendu
     // =========================
     const projectsListEl = document.getElementById("projectsList");
     const assignmentsContainer = document.getElementById("assignmentsContainer");
     const summaryText = document.getElementById("summaryText");
     const planAllBtn = document.getElementById("planAllBtn");
-    const shuffleBtn = document.getElementById("shuffleBtn");
 
     const fixedProjectSelect = document.getElementById("fixedProjectSelect");
     const fixedEmployeeSelect = document.getElementById("fixedEmployeeSelect");
@@ -831,15 +833,8 @@
       });
     }
 
-    // Bouton "Planifier"
+    // Bouton "Planifier" (maintenant pour Générer une nouvelle version)
     planAllBtn.addEventListener("click", () => {
-      const result = planAllProjectsGlobally();
-      renderAssignments(result);
-    });
-
-    // Bouton "Rebrasser" (maintenant réparé/vérifié)
-    shuffleBtn.addEventListener("click", () => {
-      // Cette fonction relance la planif, qui elle-même appelle shuffleArray(employees)
       const result = planAllProjectsGlobally();
       renderAssignments(result);
     });
@@ -854,7 +849,8 @@
         d => d.projectId === projectId && d.empId === empId
       );
       if (!exists) {
-        fixedAssignments.push({ projectId, empId, status: 'pending', reason: null });
+        // Le status sera mis à jour au prochain clic sur "Planifier"
+        fixedAssignments.push({ projectId, empId, status: 'pending', reason: null }); 
         renderFixedList();
       }
     });
